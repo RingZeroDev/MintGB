@@ -8,6 +8,7 @@ target_sources(SM83
     PRIVATE 
         src/sm83.cpp
         src/register.cpp
+        src/flags.cpp
 )
 target_include_directories(SM83 
     PRIVATE
