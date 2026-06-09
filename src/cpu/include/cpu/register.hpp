@@ -34,6 +34,13 @@ enum class Register16Mem {
     HLD = 3
 };
 
+enum class Extended {
+    Immediate8,
+    Immediate16,
+    Address8,
+    Address16
+};
+
 class RegisterPair {
     private:
         uint8_t& low;
@@ -44,4 +51,6 @@ class RegisterPair {
 
         operator uint16_t() const;
         RegisterPair& operator=(uint16_t value);
+        uint16_t operator++(int);
+        uint16_t operator--(int);
 };

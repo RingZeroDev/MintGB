@@ -6,10 +6,12 @@
 #include <cstdint>
 #include <array>
 
+template<typename Bus>
 class SM83 {
     private:
-        uint8_t a, f, b, c, d, e, h, l;
-        uint16_t pc, sp;
+        Bus& bus;
+
+        uint8_t a = 0x00, f = 0x00, b = 0x00, c = 0x00, d = 0x00, e = 0x00, h = 0x00, l = 0x00;
 
         RegisterPair af{ a, f };
         RegisterPair bc{ b, c };
@@ -36,42 +38,30 @@ class SM83 {
             &SM83::af
         };
 
+        uint8_t readByte(uint16_t addr) {
+            return bus.read(addr);
+        }
+
+        uint16_t readWord(uint16_t addr) {
+            return bus.read(addr) | (bus.read(addr+1) << 8);
+        }
+
+        void writeByte(uint16_t addr, uint8_t value) {
+            bus.write(addr, value);
+        }
+
+        void writeWord(uint16_t addr, uint16_t value) {
+            bus.write(addr, value & 0xFF);
+            bus.write(addr+1, value >> 8);
+        }
+
     public:
-        template<Register8 Reg8>
-        uint8_t get() {
-            if constexpr (Reg8 == Register8::IndirectHL) {
-                return 0;
-            } 
-            return this->*REG_TABLE[static_cast<uint8_t>(Reg8)];
-        }
+        friend class SM83Tests;
 
-        template<Register8 Reg8>
-        void set(uint8_t value) {
-            if constexpr (Reg8 == Register8::IndirectHL) {
-                return;
-            } 
-            this->*REG_TABLE[static_cast<uint8_t>(Reg8)] = value;
-        }
+        uint16_t pc = 0x0000, sp = 0x0000;
 
-        template<Register16Stack Reg16>
-        uint16_t get() {
-            return this->*REGPAIR_TABLE[static_cast<uint8_t>(Reg16)];
-        }
+        SM83(Bus& bus) : bus(bus) {}
 
-        template<Register16Stack Reg16>
-        void set(uint16_t value) {
-            this->*REGPAIR_TABLE[static_cast<uint8_t>(Reg16)] = value;
-        }
-
-        template<Register8 Reg1, Register8 Reg2>
-        void ld() {
-            uint8_t value = get<Reg2>();
-            set<Reg1>(value);
-        }
-
-        template<Register16Stack Reg1, Register16Stack Reg2>
-        void ld() {
-            uint16_t value = get<Reg2>();
-            set<Reg1>(value);
-        }
+        #include "operand.tpp"
+        #include "instruction.tpp"
 };

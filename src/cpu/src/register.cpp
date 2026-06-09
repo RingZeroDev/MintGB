@@ -11,3 +11,15 @@ RegisterPair& RegisterPair::operator=(uint16_t value) {
     low = value & 0xFF;
     return *this;
 }
+
+uint16_t RegisterPair::operator++(int) {
+    uint16_t old = *this;
+    *this = *this + 1;
+    return old;
+}
+
+uint16_t RegisterPair::operator--(int) {
+    uint16_t old = *this;
+    *this = *this - 1;
+    return old;
+}
