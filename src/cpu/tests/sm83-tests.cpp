@@ -61,3 +61,10 @@ TEST_CASE("ld r8, r8", "[ld]") {
 
     REQUIRE(cpu.get<Register8::A>() == 32);
 }
+
+TEST_CASE("ld r16, r16", "[ld]") {
+    SM83 cpu{};
+
+    cpu.set<Register16Stack::BC>(100);
+    cpu.ld<Register16Stack::DE, Register16Stack::BC>();
+}
