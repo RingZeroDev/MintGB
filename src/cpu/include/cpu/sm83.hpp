@@ -2,16 +2,21 @@
 
 #include "register.hpp"
 #include "flags.hpp"
+#include "bus.hpp"
 
 #include <cstdint>
 #include <array>
 
-template<typename Bus>
 class SM83 {
+    friend class SM83Tests;
+
     private:
         Bus& bus;
 
         uint8_t a = 0x00, f = 0x00, b = 0x00, c = 0x00, d = 0x00, e = 0x00, h = 0x00, l = 0x00;
+        uint16_t pc = 0x0000, sp = 0x0000;
+
+        uint8_t opcode;
 
         RegisterPair af{ a, f };
         RegisterPair bc{ b, c };
@@ -20,48 +25,23 @@ class SM83 {
 
         Flags flags{f};
 
-        static constexpr std::array<uint8_t SM83::*, 8> REG_TABLE {
-            &SM83::b,
-            &SM83::c,
-            &SM83::d,
-            &SM83::e,
-            &SM83::h,
-            &SM83::l,
-            nullptr,
-            &SM83::a,
-        };
+        uint8_t readByte(uint16_t addr);
+        uint16_t readWord(uint16_t addr);
 
-        static constexpr std::array<RegisterPair SM83::*, 4> REGPAIR_TABLE {
-            &SM83::bc,
-            &SM83::de,
-            &SM83::hl,
-            &SM83::af
-        };
+        void writeByte(uint16_t addr, uint8_t value);
+        void writeWord(uint16_t addr, uint16_t value);
 
-        uint8_t readByte(uint16_t addr) {
-            return bus.read(addr);
-        }
+        uint8_t fetchByte();
+        uint16_t fetchWord();
 
-        uint16_t readWord(uint16_t addr) {
-            return bus.read(addr) | (bus.read(addr+1) << 8);
-        }
+        void decode(uint8_t opcode);
 
-        void writeByte(uint16_t addr, uint8_t value) {
-            bus.write(addr, value);
-        }
+        uint8_t carry(uint8_t value, uint8_t res);
+        uint16_t carry(uint16_t value, uint16_t res);
 
-        void writeWord(uint16_t addr, uint16_t value) {
-            bus.write(addr, value & 0xFF);
-            bus.write(addr+1, value >> 8);
-        }
+        void adc(uint8_t value);
+        void add(uint8_t value);
 
     public:
-        friend class SM83Tests;
-
-        uint16_t pc = 0x0000, sp = 0x0000;
-
-        SM83(Bus& bus) : bus(bus) {}
-
-        #include "operand.tpp"
-        #include "instruction.tpp"
+        explicit SM83(Bus& bus);
 };

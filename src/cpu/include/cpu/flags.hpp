@@ -2,13 +2,6 @@
 
 #include <cstdint>
 
-enum class Condition {
-    NotZero = 0,
-    Zero = 1,
-    NoCarry = 2,
-    Carry = 3
-};
-
 enum class FlagBits : uint8_t {
     Zero = 7,
     Subtraction = 6,

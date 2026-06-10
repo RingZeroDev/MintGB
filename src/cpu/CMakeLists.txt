@@ -10,7 +10,10 @@ target_sources(SM83
         src/register.cpp
         src/flags.cpp
         src/bus.cpp
+        src/instructions.cpp
+        src/decode.cpp
 )
+
 target_include_directories(SM83 
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include/cpu

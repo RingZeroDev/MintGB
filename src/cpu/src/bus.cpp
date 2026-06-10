@@ -1,5 +1,7 @@
 #include "bus.hpp"
 
+#include <cstdint>
+
 MemoryBus::MemoryBus(std::array<uint8_t, 65536>& memory) : memory(memory) {}
 
 uint8_t MemoryBus::read(uint16_t addr) {

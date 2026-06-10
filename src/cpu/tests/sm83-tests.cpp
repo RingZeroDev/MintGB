@@ -13,7 +13,7 @@ class SM83Tests {
         std::array<uint8_t, 65536> memory{};
         MemoryBus bus { memory };
 
-        SM83<MemoryBus> cpu { bus };
+        SM83 cpu { bus };
 
     public:
         void registerPairDecomp() {
@@ -67,29 +67,17 @@ class SM83Tests {
             REQUIRE(f == 0b11110000);
         }
 
-        void registerAccess() {
-            cpu.set<Register8::A>(32);
-    
-            REQUIRE(cpu.get<Register8::A>() == 32);
-        }
-
-        void registerPairAccess() {
-            cpu.set<Register16::HL>(0xABCD);
-
-            REQUIRE(cpu.get<Register16::HL>() == 0xABCD);
-        }
-
         void instruction_ld_r8_r8() {
-            cpu.b = 32;
-            cpu.ld<Register8::A, Register8::B>();
+            cpu.a = 32;
+            cpu.decode(0x47);
 
-            REQUIRE(cpu.a == 32);
+            REQUIRE(cpu.b == 32);
         }
 
         void instruction_ld_r8_imm8() {
             memory[0] = 0xAB;
 
-            cpu.ld<Register8::A, Extended::Immediate8>();
+            cpu.decode(0x3E);
 
             REQUIRE(cpu.a == 0xAB);
         }
@@ -98,7 +86,17 @@ class SM83Tests {
             memory[0x100] = 0xAB;
             cpu.hl = 0x100;
 
-            cpu.ld<Register8::A, Register8::IndirectHL>();
+            cpu.decode(0x7E);
+
+            REQUIRE(cpu.a == 0xAB);
+        }
+
+        void instruction_ld_a_r16mem() {
+            memory[0x100] = 0xAB;
+            cpu.bc = 0x100;
+
+            cpu.decode(0x0A);
+            
             REQUIRE(cpu.a == 0xAB);
         }
 };
@@ -109,8 +107,7 @@ METHOD_AS_TEST_CASE(SM83Tests::registerPairComp, "Register Pair Composition", "[
 METHOD_AS_TEST_CASE(SM83Tests::registerPairPostfix, "Register Pair Postfix Operators", "[RegisterPair]")
 METHOD_AS_TEST_CASE(SM83Tests::flagsDecomp, "Flags Decomposition", "[Flags][Decomposition]")
 METHOD_AS_TEST_CASE(SM83Tests::flagsComp, "Flags Composition", "[Flags][Composition]")
-METHOD_AS_TEST_CASE(SM83Tests::registerAccess, "Register Access", "[Register][Access]")
-METHOD_AS_TEST_CASE(SM83Tests::registerPairAccess, "Register Pair Access", "[RegisterPair][Access]")
 METHOD_AS_TEST_CASE(SM83Tests::instruction_ld_r8_r8, "Instruction: ld r8, r8", "[Instruction][ld]")
 METHOD_AS_TEST_CASE(SM83Tests::instruction_ld_r8_imm8, "Instruction: ld r8, imm8", "[Instruction][ld]")
 METHOD_AS_TEST_CASE(SM83Tests::instruction_ld_r8_indirect_hl, "Instruction: ld r8, [hl]", "[Instruction][ld]")
+METHOD_AS_TEST_CASE(SM83Tests::instruction_ld_a_r16mem, "Instruction: ld a, [r16mem]", "[Instruction][ld]")
