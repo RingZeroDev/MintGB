@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-enum class FlagBits : uint8_t {
+enum class Flag : uint8_t {
     Zero = 7,
     Subtraction = 6,
     HalfCarry = 5,
@@ -16,13 +16,16 @@ class Flags {
     public:
         Flags(uint8_t& reg);
 
-        template<FlagBits Bit>
+        template<Flag Bit>
         bool get() const {
-            return static_cast<bool>(reg & (1 << static_cast<uint8_t>(Bit)));
+            constexpr uint8_t mask = 1 << static_cast<uint8_t>(Bit);
+            return static_cast<bool>(reg & mask);
         }
 
-        template<FlagBits Bit>
-        void set(bool cond) {
-            reg |= static_cast<uint8_t>(cond) << static_cast<uint8_t>(Bit); 
+        template<Flag Bit>
+        void set(bool cond) { 
+            constexpr uint8_t mask = 1 << static_cast<uint8_t>(Bit);
+            reg &= ~mask;
+            reg |= static_cast<uint8_t>(cond) << static_cast<uint8_t>(Bit);
         }
 };

@@ -10,8 +10,8 @@ target_sources(SM83
         src/register.cpp
         src/flags.cpp
         src/bus.cpp
-        src/instructions.cpp
         src/decode.cpp
+        src/alu.cpp
 )
 
 target_include_directories(SM83 

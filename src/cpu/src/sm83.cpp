@@ -31,3 +31,8 @@ uint16_t SM83::fetchWord() {
     pc += 2;
     return value;
 }
+
+int8_t SM83::fetchRelative() {
+    return static_cast<int8_t>(fetchByte());
+}
+

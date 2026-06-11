@@ -133,7 +133,85 @@ void SM83::decode(uint8_t opcode) {
         // ld a, [hl-]
         case 0x3A: a = readByte(hl--); break;
 
-        // 
+        // adc a, r8
+        case 0x8F: adc(a); break;
+        case 0x88: adc(b); break;
+        case 0x89: adc(c); break;
+        case 0x8A: adc(d); break;
+        case 0x8B: adc(e); break;
+        case 0x8C: adc(h); break;
+        case 0x8D: adc(l); break;
 
+        // adc a, [hl]
+        case 0x8E: adc(readByte(hl)); break;
+
+        // adc a, n8
+        case 0xCE: adc(fetchByte()); break;
+
+        // add a, r8
+        case 0x87: add(a); break;
+        case 0x80: add(b); break;
+        case 0x81: add(c); break;
+        case 0x82: add(d); break;
+        case 0x83: add(e); break;
+        case 0x84: add(h); break;
+        case 0x85: add(l); break;
+
+        // add a, [hl]
+        case 0x86: add(readByte(hl)); break;
+
+        // add a, n8
+        case 0xC6: add(fetchByte()); break;
+
+        // cp a, r8
+        case 0xBF: cp(a); break;
+        case 0xB8: cp(b); break;
+        case 0xB9: cp(c); break;
+        case 0xBA: cp(d); break;
+        case 0xBB: cp(e); break;
+        case 0xBC: cp(h); break;
+        case 0xBD: cp(l); break;
+
+        // dec r8
+        case 0x3D: dec(a); break;
+        case 0x05: dec(b); break;
+        case 0x0D: dec(c); break;
+        case 0x15: dec(d); break;
+        case 0x1D: dec(e); break;
+        case 0x25: dec(h); break;
+        case 0x2D: dec(l); break;
+
+        // dec [hl]
+        case 0x35: {
+            uint8_t value = readByte(hl);
+            dec(value);
+            writeByte(hl, value);
+            break;
+        }
+
+        // inc r8
+        case 0x3C: inc(a); break;
+        case 0x04: inc(b); break;
+        case 0x0C: inc(c); break;
+        case 0x14: inc(d); break;
+        case 0x1C: inc(e); break;
+        case 0x24: inc(h); break;
+        case 0x2C: inc(l); break;
+
+        // inc [hl]
+        case 0x34: {
+            uint8_t value = readByte(hl);
+            inc(value);
+            writeByte(hl, value);
+            break;
+        }
+
+        // add hl, r16
+        case 0x09: add(bc); break;
+        case 0x19: add(de); break;
+        case 0x29: add(hl); break;
+        case 0x39: add(sp); break;
+
+        // sub a, r8
     }
 }

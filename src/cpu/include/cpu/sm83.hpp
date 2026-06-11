@@ -33,7 +33,8 @@ class SM83 {
 
         uint8_t fetchByte();
         uint16_t fetchWord();
-
+        int8_t fetchRelative();
+        
         void decode(uint8_t opcode);
 
         uint8_t carry(uint8_t value, uint8_t res);
@@ -41,6 +42,17 @@ class SM83 {
 
         void adc(uint8_t value);
         void add(uint8_t value);
+        void add(uint16_t value);
+        void add(int8_t value);
+        void cp(uint8_t value);
+        void dec(uint8_t& reg);
+        void inc(uint8_t& reg);
+        void sbc(uint8_t value);
+        void sub(uint8_t value);
+
+        void bit(uint8_t value, uint8_t pos);
+        void res(uint8_t& value, uint8_t pos);
+        void set(uint8_t& value, uint8_t pos);
 
     public:
         explicit SM83(Bus& bus);
