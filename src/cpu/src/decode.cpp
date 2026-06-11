@@ -172,6 +172,9 @@ void SM83::decode(uint8_t opcode) {
         case 0xBC: cp(h); break;
         case 0xBD: cp(l); break;
 
+        // cp a, n8
+        case 0xFE: cp(fetchByte()); break;
+
         // dec r8
         case 0x3D: dec(a); break;
         case 0x05: dec(b); break;
@@ -206,12 +209,305 @@ void SM83::decode(uint8_t opcode) {
             break;
         }
 
+        // sbc a, r8
+        case 0x9F: sbc(a); break;
+        case 0x98: sbc(b); break;
+        case 0x99: sbc(c); break;
+        case 0x9A: sbc(d); break;
+        case 0x9B: sbc(e); break;
+        case 0x9C: sbc(h); break;
+        case 0x9D: sbc(l); break;
+
+        // sbc a, [hl]
+        case 0x9E: sbc(readByte(hl)); break;
+
+        // sbc a, n8
+        case 0xDE: sbc(fetchByte()); break;
+
+        // sub a, r8
+        case 0x97: sub(a); break;
+        case 0x90: sub(b); break;
+        case 0x91: sub(c); break;
+        case 0x92: sub(d); break;
+        case 0x93: sub(e); break;
+        case 0x94: sub(h); break;
+        case 0x95: sub(l); break;
+        
+        // sub a, [hl]
+        case 0x96: sub(readByte(hl)); break;
+
+        // sub a, n8
+        case 0xD6: sub(fetchByte()); break;
+
         // add hl, r16
         case 0x09: add(bc); break;
         case 0x19: add(de); break;
         case 0x29: add(hl); break;
         case 0x39: add(sp); break;
 
-        // sub a, r8
-    }
+        // dec r16
+        case 0x0B: bc--; break;
+        case 0x1B: de--; break;
+        case 0x2B: hl--; break;
+        case 0x3B: sp--; break;
+
+        // inc r16
+        case 0x03: bc++; break;
+        case 0x13: de++; break;
+        case 0x23: hl++; break;
+        case 0x33: sp++; break;
+
+        // and a, r8
+        case 0xA7: and_(a); break;
+        case 0xA0: and_(b); break;
+        case 0xA1: and_(c); break;
+        case 0xA2: and_(d); break;
+        case 0xA3: and_(e); break;
+        case 0xA4: and_(h); break;
+        case 0xA5: and_(l); break;
+        
+        // and a, [hl]
+        case 0xA6: and_(readByte(hl)); break;
+
+        // and a, n8
+        case 0xE6: and_(fetchByte()); break;
+
+        // cpl
+        case 0x2F: cpl(); break;
+
+        // or a, r8
+        case 0xB7: or_(a); break;
+        case 0xB0: or_(b); break;
+        case 0xB1: or_(c); break;
+        case 0xB2: or_(d); break;
+        case 0xB3: or_(e); break;
+        case 0xB4: or_(h); break;
+        case 0xB5: or_(l); break;
+        
+        // or a, [hl]
+        case 0xB6: or_(readByte(hl)); break;
+
+        // or a, n8
+        case 0xF6: or_(fetchByte()); break;
+
+        // xor a, r8
+        case 0xAF: xor_(a); break;
+        case 0xA8: xor_(b); break;
+        case 0xA9: xor_(c); break;
+        case 0xAA: xor_(d); break;
+        case 0xAB: xor_(e); break;
+        case 0xAC: xor_(h); break;
+        case 0xAD: xor_(l); break;
+        
+        // and a, [hl]
+        case 0xAE: xor_(readByte(hl)); break;
+
+        // and a, n8
+        case 0xEE: xor_(fetchByte()); break;
+
+        // rla
+        case 0x17: rla(); break;
+
+        // rlca
+        case 0x07: rlca(); break;
+
+        // rra
+        case 0x1F: rra(); break;
+
+        // rrca
+        case 0x0F: rrca(); break;
+
+        // call n16
+        case 0xCD: call(fetchWord()); break;
+
+        // call cc, n16
+        case 0xC4: { 
+            if (!flags.get<Flag::Zero>()) {
+                call(fetchWord());
+            }
+            break;
+        }
+        case 0xCC: {
+            if (flags.get<Flag::Zero>()) {
+                call(fetchWord());
+            }
+            break;
+        }
+        case 0xD4: {
+            if (!flags.get<Flag::Carry>()) {
+                call(fetchWord());
+            }
+            break;
+        }
+        case 0xDC: {
+            if (flags.get<Flag::Carry>()) {
+                call(fetchWord());
+            }
+            break;
+        }
+
+        // jp hl
+        case 0xE9: pc = hl; break;
+
+        // jp n16
+        case 0xC3: pc = fetchWord(); break;
+
+        // jp cc, n16
+        case 0xC2: {
+            if (!flags.get<Flag::Zero>()) {
+                pc = fetchWord();
+            }
+            break;
+        }
+        case 0xCA: {
+            if (flags.get<Flag::Zero>()) {
+                pc = fetchWord();
+            }
+            break;
+        }
+        case 0xD2: {
+            if (!flags.get<Flag::Carry>()) {
+                pc = fetchWord();
+            }
+            break;
+        }
+        case 0xDA: {
+            if (flags.get<Flag::Carry>()) {
+                pc = fetchWord();
+            }
+            break;
+        }
+
+        // jr n16
+        case 0x18: pc += fetchRelative(); break;
+
+        // jr cc, n16
+        case 0x20: {
+            if (!flags.get<Flag::Zero>()) {
+                pc += fetchRelative();
+            }
+            break;
+        }
+        case 0x28: {
+            if (flags.get<Flag::Zero>()) {
+                pc += fetchRelative();
+            }
+            break;
+        }
+        case 0x30: {
+            if (!flags.get<Flag::Carry>()) {
+                pc += fetchRelative();
+            }
+            break;
+        }
+        case 0x38: {
+            if (flags.get<Flag::Carry>()) {
+                pc += fetchRelative();
+            }
+            break;
+        }
+
+        // ret
+        case 0xC9: ret(); break;
+
+        // ret cc
+        case 0xC0: {
+            if (!flags.get<Flag::Zero>()) {
+                ret();
+            }
+            break;
+        }
+        case 0xC8: {
+            if (flags.get<Flag::Zero>()) {
+                ret();
+            }
+            break;
+        }
+        case 0xD0: {
+            if (!flags.get<Flag::Carry>()) {
+                ret();
+            }   
+            break;
+        }
+        case 0xD8: {
+            if (flags.get<Flag::Carry>()) {
+                ret();
+            }
+            break;
+        }
+
+        // reti
+        case 0xD9: reti(); break;
+
+        // rst vec
+        case 0xC7: rst<0x00>(); break;
+        case 0xCF: rst<0x08>(); break;
+        case 0xD7: rst<0x10>(); break;
+        case 0xDF: rst<0x18>(); break;
+        case 0xE7: rst<0x20>(); break;
+        case 0xEF: rst<0x28>(); break;
+        case 0xF7: rst<0x30>(); break;
+        case 0xFF: rst<0x38>(); break;
+
+        // ccf
+        case 0x3F: ccf(); break;
+
+        // scf
+        case 0x37: scf(); break;
+
+        // add sp, e8
+        case 0xE8: add(fetchRelative()); break;
+
+        // ld hl, sp+e8
+        case 0xF8: add(sp, fetchRelative()); break;
+
+        // pop r16
+        case 0xF1: {
+            uint16_t value;
+            pop(value);
+            af = value;
+            break;
+        }
+        case 0xC1: {
+            uint16_t value;
+            pop(value);
+            bc = value;
+            break;
+        } 
+        case 0xD1: {
+            uint16_t value;
+            pop(value);
+            de = value;
+            break;
+        }
+        case 0xE1: {
+            uint16_t value;
+            pop(value);
+            hl = value;
+            break;
+        }
+
+        // push r16
+        case 0xF5: push(af); break;
+        case 0xC5: push(bc); break;
+        case 0xD5: push(de); break;
+        case 0xE5: push(hl); break;
+
+        // di
+        case 0xF3: ime = false; break;
+
+        // ei
+        case 0xFB: imePending = true; break;
+
+        // halt
+        case 0x76: halted = true; break;
+
+        // daa
+        case 0x27: daa(); break;
+
+        // nop
+        case 0x00: break;
+
+        // stop
+        case 0x10: break;
 }

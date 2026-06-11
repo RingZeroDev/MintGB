@@ -10,7 +10,7 @@
 
 class SM83Tests {
     private:
-        std::array<uint8_t, 65536> memory{};
+        std::array<uint8_t, 0x10000> memory{};
         MemoryBus bus { memory };
 
         SM83 cpu { bus };
@@ -226,6 +226,174 @@ class SM83Tests {
             REQUIRE(cpu.flags.get<Flag::HalfCarry>() == true);
             REQUIRE(cpu.flags.get<Flag::Carry>() == false);
         }
+
+        void sbcResult() {
+            cpu.a = 0xAB;
+            cpu.b = 0x03;
+            cpu.flags.set<Flag::Carry>(true);
+
+            cpu.sbc(cpu.b);
+
+            REQUIRE(cpu.a == 0xA7);
+        }
+
+        void sbcFlags() {
+            cpu.a = 0x42;
+            cpu.b = 0x42;
+            cpu.flags.set<Flag::Carry>(true);
+
+            cpu.sbc(cpu.b);
+
+            REQUIRE(cpu.flags.get<Flag::Zero>() == false);
+            REQUIRE(cpu.flags.get<Flag::Subtraction>() == true);
+            REQUIRE(cpu.flags.get<Flag::HalfCarry>() == true);
+            REQUIRE(cpu.flags.get<Flag::Carry>() == true);
+        }
+
+        void subResult() {
+            cpu.a = 0xAB;
+            cpu.b = 0x03;
+            cpu.flags.set<Flag::Carry>(true);
+
+            cpu.sub(cpu.b);
+
+            REQUIRE(cpu.a == 0xA8);
+        }
+
+        void subFlags() {
+            cpu.a = 0x10;
+            cpu.b = 0x01;
+
+            cpu.sub(cpu.b);
+
+            REQUIRE(cpu.flags.get<Flag::Zero>() == false);
+            REQUIRE(cpu.flags.get<Flag::Subtraction>() == true);
+            REQUIRE(cpu.flags.get<Flag::HalfCarry>() == true);
+            REQUIRE(cpu.flags.get<Flag::Carry>() == false);
+        }
+
+        void andResult() {
+            cpu.a = 0b11110000;
+            cpu.b = 0b00110000;
+
+            cpu.and_(cpu.b);
+
+            REQUIRE(cpu.a == 0b00110000);
+        }
+
+        void andFlags() {
+            cpu.a = 0b11110000;
+            cpu.b = 0b00001111;
+
+            cpu.and_(cpu.b);
+
+            REQUIRE(cpu.flags.get<Flag::Zero>() == true);
+            REQUIRE(cpu.flags.get<Flag::HalfCarry>() == true);
+        }
+
+        void cplResultAndFlags() {
+            cpu.a = 0b10101010;
+
+            cpu.cpl();
+
+            REQUIRE(cpu.a == 0b01010101);
+            REQUIRE(cpu.flags.get<Flag::Subtraction>() == true);
+            REQUIRE(cpu.flags.get<Flag::HalfCarry>() == true);
+        }
+        
+        void orResult() {
+            cpu.a = 0b10101010;
+            cpu.b = 0b01010101;
+
+            cpu.or_(cpu.b);
+
+            REQUIRE(cpu.a == 0b11111111);
+        }
+
+        void orFlags() {
+            cpu.a = 0;
+            cpu.b = 0;
+
+            cpu.or_(cpu.b);
+
+            REQUIRE(cpu.flags.get<Flag::Zero>() == true);
+            REQUIRE(cpu.flags.get<Flag::Subtraction>() == false);
+            REQUIRE(cpu.flags.get<Flag::HalfCarry>() == false);
+            REQUIRE(cpu.flags.get<Flag::Carry>() == false);
+        }
+
+        void xorResult() {
+            cpu.a = 0b00110000;
+            cpu.b = 0b01010000;
+
+            cpu.xor_(cpu.b);
+
+            REQUIRE(cpu.a == 0b01100000);
+        }
+
+        void xorFlags() {
+            cpu.a = 0;
+            cpu.b = 0;
+
+            cpu.xor_(cpu.b);
+
+            REQUIRE(cpu.flags.get<Flag::Zero>() == true);
+            REQUIRE(cpu.flags.get<Flag::Subtraction>() == false);
+            REQUIRE(cpu.flags.get<Flag::HalfCarry>() == false);
+            REQUIRE(cpu.flags.get<Flag::Carry>() == false);
+        }
+
+        void rlaResultAndFlags() {
+            cpu.a = 0b00000001;
+            cpu.flags.set<Flag::Carry>(true);
+
+            cpu.rla();
+
+            REQUIRE(cpu.a == 0b00000011);
+            REQUIRE(cpu.flags.get<Flag::Carry>() == false);
+            REQUIRE(cpu.flags.get<Flag::Zero>() == false);
+            REQUIRE(cpu.flags.get<Flag::Subtraction>() == false);
+            REQUIRE(cpu.flags.get<Flag::HalfCarry>() == false);
+        }
+
+        void rlcaResultAndFlags() {
+            cpu.a = 0b10000000;
+            cpu.flags.set<Flag::Carry>(false);
+
+            cpu.rlca();
+
+            REQUIRE(cpu.a == 0b00000001);
+            REQUIRE(cpu.flags.get<Flag::Carry>() == true);
+            REQUIRE(cpu.flags.get<Flag::Zero>() == false);
+            REQUIRE(cpu.flags.get<Flag::Subtraction>() == false);
+            REQUIRE(cpu.flags.get<Flag::HalfCarry>() == false);
+        }
+
+        void rraResultAndFlags() {
+            cpu.a = 0b10000000;
+            cpu.flags.set<Flag::Carry>(true);
+
+            cpu.rra();
+
+            REQUIRE(cpu.a == 0b11000000);
+            REQUIRE(cpu.flags.get<Flag::Carry>() == false);
+            REQUIRE(cpu.flags.get<Flag::Zero>() == false);
+            REQUIRE(cpu.flags.get<Flag::Subtraction>() == false);
+            REQUIRE(cpu.flags.get<Flag::HalfCarry>() == false);
+        }
+
+        void rrcaResultAndFlags() {
+            cpu.a = 0b00000001;
+            cpu.flags.set<Flag::Carry>(false);
+
+            cpu.rrca();
+
+            REQUIRE(cpu.a == 0b10000000);
+            REQUIRE(cpu.flags.get<Flag::Carry>() == true);
+            REQUIRE(cpu.flags.get<Flag::Zero>() == false);
+            REQUIRE(cpu.flags.get<Flag::Subtraction>() == false);
+            REQUIRE(cpu.flags.get<Flag::HalfCarry>() == false);
+        }
 };
 
 
@@ -250,3 +418,18 @@ METHOD_AS_TEST_CASE(SM83Tests::decResult, "DEC Result", "[Arithmetic][dec]")
 METHOD_AS_TEST_CASE(SM83Tests::decFlags, "DEC Flags", "[Arithmetic][dec]")
 METHOD_AS_TEST_CASE(SM83Tests::incResult, "INC Result", "[Arithmetic][inc]")
 METHOD_AS_TEST_CASE(SM83Tests::incFlags, "INC Flags", "[Arithmetic][inc]")
+METHOD_AS_TEST_CASE(SM83Tests::sbcResult, "SBC Result", "[Arithmetic][sbc]")
+METHOD_AS_TEST_CASE(SM83Tests::sbcFlags, "SBC Flags", "[Arithmetic][sbc]")
+METHOD_AS_TEST_CASE(SM83Tests::subResult, "SUB Result", "[Arithmetic][sub]")
+METHOD_AS_TEST_CASE(SM83Tests::subFlags, "SUB Flags", "[Arithmetic][sub]")
+METHOD_AS_TEST_CASE(SM83Tests::andResult, "AND Result", "[Logic][and]")
+METHOD_AS_TEST_CASE(SM83Tests::andFlags, "AND Flags", "[Logic][and]")
+METHOD_AS_TEST_CASE(SM83Tests::cplResultAndFlags, "CPL Result and Flags", "[Logic][cpl]")
+METHOD_AS_TEST_CASE(SM83Tests::orResult, "OR Result", "[Logic][or]")
+METHOD_AS_TEST_CASE(SM83Tests::orFlags, "OR Flags", "[Logic][or]")
+METHOD_AS_TEST_CASE(SM83Tests::xorResult, "XOR Result", "[Logic][xor]")
+METHOD_AS_TEST_CASE(SM83Tests::xorFlags, "XOR Flags", "[Logic][xor]")
+METHOD_AS_TEST_CASE(SM83Tests::rlaResultAndFlags, "RLA Result and Flags", "[Shift][rla]")
+METHOD_AS_TEST_CASE(SM83Tests::rlcaResultAndFlags, "RLCA Result and Flags", "[Shift][rlca]")
+METHOD_AS_TEST_CASE(SM83Tests::rraResultAndFlags, "RRA Result and Flags", "[Shift][rra]")
+METHOD_AS_TEST_CASE(SM83Tests::rrcaResultAndFlags, "RRCA Result and Flags", "[Shift][rrca]")
