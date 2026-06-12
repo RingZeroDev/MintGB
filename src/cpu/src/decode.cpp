@@ -321,30 +321,10 @@ void SM83::decode(uint8_t opcode) {
         case 0xCD: call(fetchWord()); break;
 
         // call cc, n16
-        case 0xC4: { 
-            if (!flags.get<Flag::Zero>()) {
-                call(fetchWord());
-            }
-            break;
-        }
-        case 0xCC: {
-            if (flags.get<Flag::Zero>()) {
-                call(fetchWord());
-            }
-            break;
-        }
-        case 0xD4: {
-            if (!flags.get<Flag::Carry>()) {
-                call(fetchWord());
-            }
-            break;
-        }
-        case 0xDC: {
-            if (flags.get<Flag::Carry>()) {
-                call(fetchWord());
-            }
-            break;
-        }
+        case 0xC4: call(!zero, fetchWord()); break;
+        case 0xCC: call(zero, fetchWord()); break;
+        case 0xD4: call(!carry, fetchWord()); break;
+        case 0xDC: call(carry, fetchWord()); break;
 
         // jp hl
         case 0xE9: pc = hl; break;
@@ -353,101 +333,41 @@ void SM83::decode(uint8_t opcode) {
         case 0xC3: pc = fetchWord(); break;
 
         // jp cc, n16
-        case 0xC2: {
-            if (!flags.get<Flag::Zero>()) {
-                pc = fetchWord();
-            }
-            break;
-        }
-        case 0xCA: {
-            if (flags.get<Flag::Zero>()) {
-                pc = fetchWord();
-            }
-            break;
-        }
-        case 0xD2: {
-            if (!flags.get<Flag::Carry>()) {
-                pc = fetchWord();
-            }
-            break;
-        }
-        case 0xDA: {
-            if (flags.get<Flag::Carry>()) {
-                pc = fetchWord();
-            }
-            break;
-        }
+        case 0xC2: jp(!zero, fetchWord()); break;
+        case 0xCA: jp(zero, fetchWord()); break;
+        case 0xD2: jp(!carry, fetchWord()); break;
+        case 0xDA: jp(carry, fetchWord()); break;
 
         // jr n16
         case 0x18: pc += fetchRelative(); break;
 
         // jr cc, n16
-        case 0x20: {
-            if (!flags.get<Flag::Zero>()) {
-                pc += fetchRelative();
-            }
-            break;
-        }
-        case 0x28: {
-            if (flags.get<Flag::Zero>()) {
-                pc += fetchRelative();
-            }
-            break;
-        }
-        case 0x30: {
-            if (!flags.get<Flag::Carry>()) {
-                pc += fetchRelative();
-            }
-            break;
-        }
-        case 0x38: {
-            if (flags.get<Flag::Carry>()) {
-                pc += fetchRelative();
-            }
-            break;
-        }
+        case 0x20: jr(!zero, fetchRelative()); break;
+        case 0x28: jr(zero, fetchRelative()); break;
+        case 0x30: jr(!carry, fetchRelative()); break;
+        case 0x38: jr(carry, fetchRelative()); break;
 
         // ret
-        case 0xC9: ret(); break;
+        case 0xC9: pop(pc); break;
 
         // ret cc
-        case 0xC0: {
-            if (!flags.get<Flag::Zero>()) {
-                ret();
-            }
-            break;
-        }
-        case 0xC8: {
-            if (flags.get<Flag::Zero>()) {
-                ret();
-            }
-            break;
-        }
-        case 0xD0: {
-            if (!flags.get<Flag::Carry>()) {
-                ret();
-            }   
-            break;
-        }
-        case 0xD8: {
-            if (flags.get<Flag::Carry>()) {
-                ret();
-            }
-            break;
-        }
+        case 0xC0: ret(!zero); break;
+        case 0xC8: ret(zero); break;
+        case 0xD0: ret(!carry); break;
+        case 0xD8: ret(carry); break;
 
         // reti
         case 0xD9: reti(); break;
 
         // rst vec
-        case 0xC7: rst<0x00>(); break;
-        case 0xCF: rst<0x08>(); break;
-        case 0xD7: rst<0x10>(); break;
-        case 0xDF: rst<0x18>(); break;
-        case 0xE7: rst<0x20>(); break;
-        case 0xEF: rst<0x28>(); break;
-        case 0xF7: rst<0x30>(); break;
-        case 0xFF: rst<0x38>(); break;
+        case 0xC7: call(0x00); break;
+        case 0xCF: call(0x08); break;
+        case 0xD7: call(0x10); break;
+        case 0xDF: call(0x18); break;
+        case 0xE7: call(0x20); break;
+        case 0xEF: call(0x28); break;
+        case 0xF7: call(0x30); break;
+        case 0xFF: call(0x38); break;
 
         // ccf
         case 0x3F: ccf(); break;
@@ -459,7 +379,7 @@ void SM83::decode(uint8_t opcode) {
         case 0xE8: add(fetchRelative()); break;
 
         // ld hl, sp+e8
-        case 0xF8: add(sp, fetchRelative()); break;
+        case 0xF8: hl = add(sp, fetchRelative()); break;
 
         // pop r16
         case 0xF1: {
@@ -510,4 +430,5 @@ void SM83::decode(uint8_t opcode) {
 
         // stop
         case 0x10: break;
+    }
 }

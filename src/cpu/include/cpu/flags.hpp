@@ -2,30 +2,24 @@
 
 #include <cstdint>
 
-enum class Flag : uint8_t {
-    Zero = 7,
-    Subtraction = 6,
-    HalfCarry = 5,
-    Carry = 4
-};
-
-class Flags {
+template<uint8_t Bit>
+class Flag {
     private:
+        static constexpr uint8_t MASK = 1 << Bit;
         uint8_t& reg;
 
     public:
-        Flags(uint8_t& reg);
+        Flag(uint8_t& reg) : reg(reg) {}
+        Flag(const Flag&) = delete;
+        Flag& operator=(const Flag&) = delete;
 
-        template<Flag Bit>
-        bool get() const {
-            constexpr uint8_t mask = 1 << static_cast<uint8_t>(Bit);
-            return static_cast<bool>(reg & mask);
+        operator bool() const {
+            return static_cast<bool>(reg & MASK); 
         }
 
-        template<Flag Bit>
-        void set(bool cond) { 
-            constexpr uint8_t mask = 1 << static_cast<uint8_t>(Bit);
-            reg &= ~mask;
-            reg |= static_cast<uint8_t>(cond) << static_cast<uint8_t>(Bit);
+        Flag& operator=(bool value) {
+            reg &= ~MASK;
+            reg |= static_cast<bool>(value) << Bit;
+            return *this;
         }
 };

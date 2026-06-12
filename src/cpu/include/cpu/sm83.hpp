@@ -23,7 +23,10 @@ class SM83 {
         RegisterPair de{ d, e };
         RegisterPair hl{ h, l };
 
-        Flags flags{f};
+        Flag<7> zero{ f };
+        Flag<6> subtract{ f };
+        Flag<5> halfCarry{ f };
+        Flag<4> carry{ f };
 
         uint8_t readByte(uint16_t addr);
         uint16_t readWord(uint16_t addr);
@@ -37,15 +40,15 @@ class SM83 {
 
         void decode(uint8_t opcode);
 
-        uint8_t carry(uint8_t value, uint8_t res);
-        uint16_t carry(uint16_t value, uint16_t res);
-        uint8_t carry(uint16_t reg, int8_t offset, uint16_t res);
+        uint8_t carryCompare(uint8_t value, uint8_t res);
+        uint16_t carryCompare(uint16_t value, uint16_t res);
+        uint8_t carryCompare(uint16_t reg, int8_t offset, uint16_t res);
 
         void adc(uint8_t value);
         void add(uint8_t value);
         void add(uint16_t value);
         void add(int8_t value);
-        void add(uint16_t reg, int8_t offset);
+        uint8_t add(uint16_t reg, int8_t offset);
         void cp(uint8_t value);
         void dec(uint8_t& reg);
         void inc(uint8_t& reg);
@@ -67,16 +70,15 @@ class SM83 {
         void set(uint8_t& value, uint8_t pos);
         
         void call(uint16_t addr);
-        void ret();
+        void call(bool cond, uint16_t addr);
+        void jp(bool cond, uint16_t addr);
+        void jr(bool cond, int8_t offset);
+        void ret(bool cond);
         void reti();
-
-        template<uint8_t vec>
-        void rst() {
-            call(vec);
-        }
 
         void push(uint16_t value);
         void pop(uint16_t& reg);
+        void ld(uint16_t reg, int8_t offset);
 
     public:
         explicit SM83(Bus& bus);

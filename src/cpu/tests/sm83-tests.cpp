@@ -47,22 +47,30 @@ class SM83Tests {
 
         void flagsDecomp() {
             uint8_t f = 0b11110000;
-            Flags flags{ f };
+            
+            Flag<7> zero{ f };
+            Flag<6> subtract{ f };
+            Flag<5> halfCarry{ f };
+            Flag<6> carry{ f };
 
-            REQUIRE(flags.get<Flag::Carry>() == true);
-            REQUIRE(flags.get<Flag::HalfCarry>() == true);
-            REQUIRE(flags.get<Flag::Subtraction>() == true);
-            REQUIRE(flags.get<Flag::Zero>() == true);
+            REQUIRE(carry);
+            REQUIRE(halfCarry);
+            REQUIRE(subtract);
+            REQUIRE(zero);
         }
 
         void flagsComp() {
             uint8_t f = 0;
-            Flags flags{ f };
 
-            flags.set<Flag::Carry>(true);
-            flags.set<Flag::HalfCarry>(true);
-            flags.set<Flag::Subtraction>(true);
-            flags.set<Flag::Zero>(true);
+            Flag<7> zero{ f };
+            Flag<6> subtract{ f };
+            Flag<5> halfCarry{ f };
+            Flag<4> carry{ f };
+
+            zero = true;
+            subtract = true;
+            halfCarry = true;
+            carry = true;
 
             REQUIRE(f == 0b11110000);
         }
@@ -103,8 +111,8 @@ class SM83Tests {
         void adcResult() {
             cpu.a = 5;
             cpu.b = 7;
+            cpu.carry = true;
 
-            cpu.flags.set<Flag::Carry>(true);
             cpu.adc(cpu.b);
 
             REQUIRE(cpu.a == 13);
@@ -113,21 +121,21 @@ class SM83Tests {
         void adcFlags() {
             cpu.a = 0xFF;
             cpu.b = 0x01;
+            cpu.subtract = true;
 
-            cpu.flags.set<Flag::Subtraction>(true);
             cpu.adc(cpu.b);
 
-            REQUIRE(cpu.flags.get<Flag::Carry>() == true);
-            REQUIRE(cpu.flags.get<Flag::Zero>() == true);
-            REQUIRE(cpu.flags.get<Flag::HalfCarry>() == true);
-            REQUIRE(cpu.flags.get<Flag::Subtraction>() == false);
+            REQUIRE(cpu.carry);
+            REQUIRE(cpu.zero);
+            REQUIRE(cpu.halfCarry);
+            REQUIRE_FALSE(cpu.subtract);
         }
 
         void addResult() {
             cpu.a = 5;
             cpu.b = 7;
+            cpu.carry = true;
 
-            cpu.flags.set<Flag::Carry>(true);
             cpu.add(cpu.b);
 
             REQUIRE(cpu.a == 12);
@@ -136,21 +144,21 @@ class SM83Tests {
         void addFlags() {
             cpu.a = 0xFF;
             cpu.b = 0x00;
+            cpu.subtract = true;
 
-            cpu.flags.set<Flag::Subtraction>(true);
             cpu.add(cpu.b);
 
-            REQUIRE(cpu.flags.get<Flag::Carry>() == false);
-            REQUIRE(cpu.flags.get<Flag::Zero>() == false);
-            REQUIRE(cpu.flags.get<Flag::HalfCarry>() == false);
-            REQUIRE(cpu.flags.get<Flag::Subtraction>() == false);
+            REQUIRE_FALSE(cpu.carry);
+            REQUIRE_FALSE(cpu.zero);
+            REQUIRE_FALSE(cpu.halfCarry);
+            REQUIRE_FALSE(cpu.subtract);
         }
 
         void addRegisterPairResult() {
             cpu.hl = 0xFFFF;
             cpu.bc = 0x0000;
+            cpu.carry = true;
 
-            cpu.flags.set<Flag::Carry>(true);
             cpu.add(cpu.bc);
 
             REQUIRE(cpu.hl == 0xFFFF);
@@ -162,9 +170,9 @@ class SM83Tests {
 
             cpu.add(cpu.bc);
 
-            REQUIRE(cpu.flags.get<Flag::Carry>() == true);
-            REQUIRE(cpu.flags.get<Flag::HalfCarry>() == true);
-            REQUIRE(cpu.flags.get<Flag::Subtraction>() == false);
+            REQUIRE(cpu.carry);
+            REQUIRE(cpu.halfCarry);
+            REQUIRE_FALSE(cpu.subtract);
         }
 
         void addRelativeResult() {
@@ -183,10 +191,10 @@ class SM83Tests {
 
             cpu.cp(cpu.b);
 
-            REQUIRE(cpu.flags.get<Flag::Zero>() == false);
-            REQUIRE(cpu.flags.get<Flag::Carry>() == true);
-            REQUIRE(cpu.flags.get<Flag::HalfCarry>() == true);
-            REQUIRE(cpu.flags.get<Flag::Subtraction>() == true);
+            REQUIRE_FALSE(cpu.zero);
+            REQUIRE(cpu.carry);
+            REQUIRE(cpu.halfCarry);
+            REQUIRE(cpu.subtract);
         }
 
         void decResult() {
@@ -202,10 +210,10 @@ class SM83Tests {
 
             cpu.dec(cpu.a);
 
-            REQUIRE(cpu.flags.get<Flag::Zero>() == false);
-            REQUIRE(cpu.flags.get<Flag::Subtraction>() == true);
-            REQUIRE(cpu.flags.get<Flag::HalfCarry>() == true);
-            REQUIRE(cpu.flags.get<Flag::Carry>() == false);
+            REQUIRE_FALSE(cpu.zero);
+            REQUIRE(cpu.subtract);
+            REQUIRE(cpu.halfCarry);
+            REQUIRE_FALSE(cpu.carry);
         }
 
         void incResult() {
@@ -221,16 +229,16 @@ class SM83Tests {
 
             cpu.inc(cpu.a);
 
-            REQUIRE(cpu.flags.get<Flag::Zero>() == false);
-            REQUIRE(cpu.flags.get<Flag::Subtraction>() == false);
-            REQUIRE(cpu.flags.get<Flag::HalfCarry>() == true);
-            REQUIRE(cpu.flags.get<Flag::Carry>() == false);
+            REQUIRE_FALSE(cpu.zero);
+            REQUIRE_FALSE(cpu.subtract);
+            REQUIRE(cpu.halfCarry);
+            REQUIRE_FALSE(cpu.carry);
         }
 
         void sbcResult() {
             cpu.a = 0xAB;
             cpu.b = 0x03;
-            cpu.flags.set<Flag::Carry>(true);
+            cpu.carry = true;
 
             cpu.sbc(cpu.b);
 
@@ -240,20 +248,20 @@ class SM83Tests {
         void sbcFlags() {
             cpu.a = 0x42;
             cpu.b = 0x42;
-            cpu.flags.set<Flag::Carry>(true);
+            cpu.carry = true;
 
             cpu.sbc(cpu.b);
 
-            REQUIRE(cpu.flags.get<Flag::Zero>() == false);
-            REQUIRE(cpu.flags.get<Flag::Subtraction>() == true);
-            REQUIRE(cpu.flags.get<Flag::HalfCarry>() == true);
-            REQUIRE(cpu.flags.get<Flag::Carry>() == true);
+            REQUIRE_FALSE(cpu.zero);
+            REQUIRE(cpu.subtract);
+            REQUIRE(cpu.halfCarry);
+            REQUIRE(cpu.carry);
         }
 
         void subResult() {
             cpu.a = 0xAB;
             cpu.b = 0x03;
-            cpu.flags.set<Flag::Carry>(true);
+            cpu.carry = true;
 
             cpu.sub(cpu.b);
 
@@ -266,10 +274,10 @@ class SM83Tests {
 
             cpu.sub(cpu.b);
 
-            REQUIRE(cpu.flags.get<Flag::Zero>() == false);
-            REQUIRE(cpu.flags.get<Flag::Subtraction>() == true);
-            REQUIRE(cpu.flags.get<Flag::HalfCarry>() == true);
-            REQUIRE(cpu.flags.get<Flag::Carry>() == false);
+            REQUIRE_FALSE(cpu.zero);
+            REQUIRE(cpu.subtract);
+            REQUIRE(cpu.halfCarry);
+            REQUIRE_FALSE(cpu.carry);
         }
 
         void andResult() {
@@ -287,8 +295,8 @@ class SM83Tests {
 
             cpu.and_(cpu.b);
 
-            REQUIRE(cpu.flags.get<Flag::Zero>() == true);
-            REQUIRE(cpu.flags.get<Flag::HalfCarry>() == true);
+            REQUIRE(cpu.zero);
+            REQUIRE(cpu.halfCarry);
         }
 
         void cplResultAndFlags() {
@@ -297,8 +305,8 @@ class SM83Tests {
             cpu.cpl();
 
             REQUIRE(cpu.a == 0b01010101);
-            REQUIRE(cpu.flags.get<Flag::Subtraction>() == true);
-            REQUIRE(cpu.flags.get<Flag::HalfCarry>() == true);
+            REQUIRE(cpu.subtract);
+            REQUIRE(cpu.subtract);
         }
         
         void orResult() {
@@ -316,10 +324,10 @@ class SM83Tests {
 
             cpu.or_(cpu.b);
 
-            REQUIRE(cpu.flags.get<Flag::Zero>() == true);
-            REQUIRE(cpu.flags.get<Flag::Subtraction>() == false);
-            REQUIRE(cpu.flags.get<Flag::HalfCarry>() == false);
-            REQUIRE(cpu.flags.get<Flag::Carry>() == false);
+            REQUIRE(cpu.zero);
+            REQUIRE_FALSE(cpu.subtract);
+            REQUIRE_FALSE(cpu.halfCarry);
+            REQUIRE_FALSE(cpu.carry);
         }
 
         void xorResult() {
@@ -337,62 +345,60 @@ class SM83Tests {
 
             cpu.xor_(cpu.b);
 
-            REQUIRE(cpu.flags.get<Flag::Zero>() == true);
-            REQUIRE(cpu.flags.get<Flag::Subtraction>() == false);
-            REQUIRE(cpu.flags.get<Flag::HalfCarry>() == false);
-            REQUIRE(cpu.flags.get<Flag::Carry>() == false);
+            REQUIRE(cpu.zero);
+            REQUIRE_FALSE(cpu.subtract);
+            REQUIRE_FALSE(cpu.halfCarry);
+            REQUIRE_FALSE(cpu.carry);
         }
 
         void rlaResultAndFlags() {
             cpu.a = 0b00000001;
-            cpu.flags.set<Flag::Carry>(true);
+            cpu.carry = true;
 
             cpu.rla();
 
             REQUIRE(cpu.a == 0b00000011);
-            REQUIRE(cpu.flags.get<Flag::Carry>() == false);
-            REQUIRE(cpu.flags.get<Flag::Zero>() == false);
-            REQUIRE(cpu.flags.get<Flag::Subtraction>() == false);
-            REQUIRE(cpu.flags.get<Flag::HalfCarry>() == false);
+            REQUIRE_FALSE(cpu.carry);
+            REQUIRE_FALSE(cpu.zero);
+            REQUIRE_FALSE(cpu.subtract);
+            REQUIRE_FALSE(cpu.halfCarry);
         }
 
         void rlcaResultAndFlags() {
             cpu.a = 0b10000000;
-            cpu.flags.set<Flag::Carry>(false);
 
             cpu.rlca();
 
             REQUIRE(cpu.a == 0b00000001);
-            REQUIRE(cpu.flags.get<Flag::Carry>() == true);
-            REQUIRE(cpu.flags.get<Flag::Zero>() == false);
-            REQUIRE(cpu.flags.get<Flag::Subtraction>() == false);
-            REQUIRE(cpu.flags.get<Flag::HalfCarry>() == false);
+            REQUIRE(cpu.carry);
+            REQUIRE_FALSE(cpu.zero);
+            REQUIRE_FALSE(cpu.subtract);
+            REQUIRE_FALSE(cpu.halfCarry);
         }
 
         void rraResultAndFlags() {
             cpu.a = 0b10000000;
-            cpu.flags.set<Flag::Carry>(true);
+            cpu.carry = true;
 
             cpu.rra();
 
             REQUIRE(cpu.a == 0b11000000);
-            REQUIRE(cpu.flags.get<Flag::Carry>() == false);
-            REQUIRE(cpu.flags.get<Flag::Zero>() == false);
-            REQUIRE(cpu.flags.get<Flag::Subtraction>() == false);
-            REQUIRE(cpu.flags.get<Flag::HalfCarry>() == false);
+            REQUIRE_FALSE(cpu.carry);
+            REQUIRE_FALSE(cpu.zero);
+            REQUIRE_FALSE(cpu.subtract);
+            REQUIRE_FALSE(cpu.halfCarry);
         }
 
         void rrcaResultAndFlags() {
             cpu.a = 0b00000001;
-            cpu.flags.set<Flag::Carry>(false);
 
             cpu.rrca();
 
             REQUIRE(cpu.a == 0b10000000);
-            REQUIRE(cpu.flags.get<Flag::Carry>() == true);
-            REQUIRE(cpu.flags.get<Flag::Zero>() == false);
-            REQUIRE(cpu.flags.get<Flag::Subtraction>() == false);
-            REQUIRE(cpu.flags.get<Flag::HalfCarry>() == false);
+            REQUIRE(cpu.carry);
+            REQUIRE_FALSE(cpu.zero);
+            REQUIRE_FALSE(cpu.subtract);
+            REQUIRE_FALSE(cpu.halfCarry);
         }
 };
 
