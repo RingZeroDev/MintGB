@@ -39,6 +39,7 @@ class SM83 {
         int8_t fetchRelative();
 
         void decode(uint8_t opcode);
+        void decodeCB(uint8_t opcode);
 
         uint8_t carryCompare(uint8_t value, uint8_t res);
         uint16_t carryCompare(uint16_t value, uint16_t res);
@@ -68,6 +69,14 @@ class SM83 {
         void bit(uint8_t pos, uint8_t value);
         void res(uint8_t& value, uint8_t pos);
         void set(uint8_t& value, uint8_t pos);
+        void rl(uint8_t& value);
+        void rlc(uint8_t& value);
+        void rr(uint8_t& value);
+        void rrc(uint8_t& value);
+        void sla(uint8_t& value);
+        void sra(uint8_t& value);
+        void srl(uint8_t& value);
+        void swap(uint8_t& value);
         
         void call(uint16_t addr);
         void call(bool cond, uint16_t addr);
@@ -75,9 +84,10 @@ class SM83 {
         void jr(bool cond, int8_t offset);
         void ret(bool cond);
         void reti();
+        void stop();
 
         void push(uint16_t value);
-        void pop(uint16_t& reg);
+        uint16_t pop();
         void ld(uint16_t reg, int8_t offset);
 
     public:

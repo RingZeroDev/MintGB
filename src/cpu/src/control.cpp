@@ -18,11 +18,15 @@ void SM83::jr(bool cond, int8_t offset) {
 }
 
 void SM83::ret(bool cond) {
-    if (cond) pop(pc);
+    if (cond) pc = pop();
 }
 
 void SM83::reti() {
-    pop(pc);
+    pc = pop();
     imePending = true;
 }
 
+void SM83::stop() {
+    // complicated behavior, just halt for now
+    halted = true;
+}

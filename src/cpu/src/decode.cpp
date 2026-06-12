@@ -348,7 +348,7 @@ void SM83::decode(uint8_t opcode) {
         case 0x38: jr(carry, fetchRelative()); break;
 
         // ret
-        case 0xC9: pop(pc); break;
+        case 0xC9: pc = pop(); break;
 
         // ret cc
         case 0xC0: ret(!zero); break;
@@ -382,30 +382,10 @@ void SM83::decode(uint8_t opcode) {
         case 0xF8: hl = add(sp, fetchRelative()); break;
 
         // pop r16
-        case 0xF1: {
-            uint16_t value;
-            pop(value);
-            af = value;
-            break;
-        }
-        case 0xC1: {
-            uint16_t value;
-            pop(value);
-            bc = value;
-            break;
-        } 
-        case 0xD1: {
-            uint16_t value;
-            pop(value);
-            de = value;
-            break;
-        }
-        case 0xE1: {
-            uint16_t value;
-            pop(value);
-            hl = value;
-            break;
-        }
+        case 0xF1: af = pop(); break;
+        case 0xC1: bc = pop(); break;
+        case 0xD1: de = pop(); break;
+        case 0xE1: hl = pop(); break;
 
         // push r16
         case 0xF5: push(af); break;
@@ -429,6 +409,9 @@ void SM83::decode(uint8_t opcode) {
         case 0x00: break;
 
         // stop
-        case 0x10: break;
+        case 0x10: stop(); break;
+
+        // CB opcode
+        case 0xCB: decodeCB(fetchByte());
     }
 }

@@ -10,6 +10,7 @@ target_sources(SM83
         src/register.cpp
         src/bus.cpp
         src/decode.cpp
+        src/decode_cb.cpp
         src/alu.cpp
         src/stack.cpp
         src/control.cpp
@@ -25,7 +26,7 @@ target_include_directories(SM83
 find_package(Catch2 3 REQUIRED)
 
 add_executable(tests
-    tests/sm83-tests.cpp
+    tests/sm83_tests.cpp
 )
 
 target_link_libraries(tests Catch2::Catch2WithMain SM83)

@@ -5,9 +5,10 @@ void SM83::push(uint16_t value) {
     sp -= 2;
 }
 
-void SM83::pop(uint16_t& reg) {
-    reg = readWord(sp-2);
+uint16_t SM83::pop() {
+    uint16_t value = readWord(sp-2);
     sp += 2;
+    return value;
 }
 
 uint8_t SM83::add(uint16_t reg, int8_t offset) {
