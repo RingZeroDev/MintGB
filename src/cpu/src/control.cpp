@@ -1,7 +1,7 @@
 #include "sm83.hpp"
 
 void SM83::call(uint16_t addr) {
-    push(pc + 1);
+    push(pc);
     pc = addr;
 }
 
@@ -19,11 +19,6 @@ void SM83::jr(bool cond, int8_t offset) {
 
 void SM83::ret(bool cond) {
     if (cond) pc = pop();
-}
-
-void SM83::reti() {
-    pc = pop();
-    imePending = true;
 }
 
 void SM83::stop() {

@@ -1,6 +1,6 @@
 #include "sm83.hpp"
 
-void SM83::decode(uint8_t opcode) {
+void SM83::execute(uint8_t opcode) {
     switch (opcode) {
         // ld r8, r8
         case 0x7F: a = a; break;
@@ -273,7 +273,11 @@ void SM83::decode(uint8_t opcode) {
         case 0xE6: and_(fetchByte()); break;
 
         // cpl
-        case 0x2F: cpl(); break;
+        case 0x2F: 
+            a = ~a; 
+            subtract = true;
+            halfCarry = true;
+            break;
 
         // or a, r8
         case 0xB7: or_(a); break;
@@ -306,16 +310,28 @@ void SM83::decode(uint8_t opcode) {
         case 0xEE: xor_(fetchByte()); break;
 
         // rla
-        case 0x17: rla(); break;
+        case 0x17: 
+            rl(a); 
+            zero = false;
+            break;
 
         // rlca
-        case 0x07: rlca(); break;
+        case 0x07: 
+            rlc(a); 
+            zero = false;
+            break;
 
         // rra
-        case 0x1F: rra(); break;
+        case 0x1F: 
+            rr(a); 
+            zero = false;
+            break;
 
         // rrca
-        case 0x0F: rrca(); break;
+        case 0x0F: 
+            rrc(a); 
+            zero = false;
+            break;
 
         // call n16
         case 0xCD: call(fetchWord()); break;
@@ -357,7 +373,10 @@ void SM83::decode(uint8_t opcode) {
         case 0xD8: ret(carry); break;
 
         // reti
-        case 0xD9: reti(); break;
+        case 0xD9:
+            pc = pop();
+            imePending = true;
+            break;
 
         // rst vec
         case 0xC7: call(0x00); break;
@@ -370,19 +389,50 @@ void SM83::decode(uint8_t opcode) {
         case 0xFF: call(0x38); break;
 
         // ccf
-        case 0x3F: ccf(); break;
+        case 0x3F:
+            carry = !carry;
+            halfCarry = false;
+            subtract = false;
+            break;
 
         // scf
-        case 0x37: scf(); break;
+        case 0x37:
+            carry = true;
+            halfCarry = false;
+            subtract = false;
+            break;
 
         // add sp, e8
-        case 0xE8: add(fetchRelative()); break;
+        case 0xE8: {
+            int8_t value = fetchRelative();
+            uint16_t res = sp + value;
+            uint16_t carryMask = sp ^ static_cast<uint16_t>(value) ^ res;
+            zero = false;
+            subtract = false;
+            halfCarry = carryMask >> 4 & 1;
+            carry = carryMask >> 8 & 1;
+            sp = res;
+            break;
+        } 
 
         // ld hl, sp+e8
-        case 0xF8: hl = add(sp, fetchRelative()); break;
+        case 0xF8: {
+            int8_t value = fetchRelative();
+            uint16_t res = sp + value;
+            uint16_t carryMask = sp ^ static_cast<uint16_t>(value) ^ res;
+            zero = false;
+            subtract = false;
+            halfCarry = carryMask >> 4 & 1;
+            carry = carryMask >> 8 & 1;
+            hl = res;
+            break;
+        }
 
         // pop r16
-        case 0xF1: af = pop(); break;
+        case 0xF1: 
+            af = pop(); 
+            f &= 0b11110000;
+            break;
         case 0xC1: bc = pop(); break;
         case 0xD1: de = pop(); break;
         case 0xE1: hl = pop(); break;
@@ -403,7 +453,30 @@ void SM83::decode(uint8_t opcode) {
         case 0x76: halted = true; break;
 
         // daa
-        case 0x27: daa(); break;
+        case 0x27: {
+            uint8_t res = a;
+
+            if (subtract) {
+                uint8_t adj = 0;
+                if (halfCarry) adj += 0x6;
+                if (carry) adj += 0x60;
+                res -= adj;
+            } else {
+                uint8_t adj = 0;
+                if (halfCarry || (a & 0xF) > 0x9) adj += 0x6;
+                if (carry || a > 0x99) {
+                    adj += 0x60;
+                    carry = true;
+                } 
+                res += adj;
+            }
+
+            zero = res == 0;
+            carry = carryCompare(a, res) >> 7 & 1;
+            halfCarry = false;
+            a = res;
+            break;
+        }
 
         // nop
         case 0x00: break;
@@ -412,6 +485,6 @@ void SM83::decode(uint8_t opcode) {
         case 0x10: stop(); break;
 
         // CB opcode
-        case 0xCB: decodeCB(fetchByte());
+        case 0xCB: executeCB(fetchByte()); break;
     }
 }

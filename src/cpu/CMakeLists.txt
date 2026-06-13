@@ -9,10 +9,11 @@ target_sources(SM83
         src/sm83.cpp
         src/register.cpp
         src/bus.cpp
-        src/decode.cpp
-        src/decode_cb.cpp
+        src/execute.cpp
+        src/execute_cb.cpp
         src/alu.cpp
         src/stack.cpp
+        src/shift.cpp
         src/control.cpp
 )
 

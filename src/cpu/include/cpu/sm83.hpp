@@ -38,8 +38,8 @@ class SM83 {
         uint16_t fetchWord();
         int8_t fetchRelative();
 
-        void decode(uint8_t opcode);
-        void decodeCB(uint8_t opcode);
+        void execute(uint8_t opcode);
+        void executeCB(uint8_t opcode);
 
         uint8_t carryCompare(uint8_t value, uint8_t res);
         uint16_t carryCompare(uint16_t value, uint16_t res);
@@ -48,47 +48,28 @@ class SM83 {
         void adc(uint8_t value);
         void add(uint8_t value);
         void add(uint16_t value);
-        void add(int8_t value);
-        uint8_t add(uint16_t reg, int8_t offset);
         void cp(uint8_t value);
         void dec(uint8_t& reg);
         void inc(uint8_t& reg);
         void sbc(uint8_t value);
         void sub(uint8_t value);
         void and_(uint8_t value);
-        void cpl();
         void or_(uint8_t value);
         void xor_(uint8_t value);
-        void rla();
-        void rlca();
-        void rra();
-        void rrca();
-        void ccf();
-        void scf();
-        void daa();
-        void bit(uint8_t pos, uint8_t value);
-        void res(uint8_t& value, uint8_t pos);
-        void set(uint8_t& value, uint8_t pos);
         void rl(uint8_t& value);
         void rlc(uint8_t& value);
         void rr(uint8_t& value);
         void rrc(uint8_t& value);
-        void sla(uint8_t& value);
-        void sra(uint8_t& value);
-        void srl(uint8_t& value);
-        void swap(uint8_t& value);
         
         void call(uint16_t addr);
         void call(bool cond, uint16_t addr);
         void jp(bool cond, uint16_t addr);
         void jr(bool cond, int8_t offset);
         void ret(bool cond);
-        void reti();
         void stop();
 
         void push(uint16_t value);
         uint16_t pop();
-        void ld(uint16_t reg, int8_t offset);
 
     public:
         explicit SM83(Bus& bus);

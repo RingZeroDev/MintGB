@@ -77,7 +77,7 @@ class SM83Tests {
 
         void instruction_ld_r8_r8() {
             cpu.a = 32;
-            cpu.decode(0x47);
+            cpu.execute(0x47);
 
             REQUIRE(cpu.b == 32);
         }
@@ -85,7 +85,7 @@ class SM83Tests {
         void instruction_ld_r8_imm8() {
             memory[0] = 0xAB;
 
-            cpu.decode(0x3E);
+            cpu.execute(0x3E);
 
             REQUIRE(cpu.a == 0xAB);
         }
@@ -94,7 +94,7 @@ class SM83Tests {
             memory[0x100] = 0xAB;
             cpu.hl = 0x100;
 
-            cpu.decode(0x7E);
+            cpu.execute(0x7E);
 
             REQUIRE(cpu.a == 0xAB);
         }
@@ -103,7 +103,7 @@ class SM83Tests {
             memory[0x100] = 0xAB;
             cpu.bc = 0x100;
 
-            cpu.decode(0x0A);
+            cpu.execute(0x0A);
 
             REQUIRE(cpu.a == 0xAB);
         }
@@ -175,14 +175,30 @@ class SM83Tests {
             REQUIRE_FALSE(cpu.subtract);
         }
 
-        void addRelativeResult() {
+        void instruction_add_sp_e8() {
             memory[0x00] = 0xFF;
+            cpu.sp = 0x0008;
 
-            cpu.sp = 0x0001;
+            cpu.execute(0xE8);
 
-            cpu.add(cpu.fetchRelative());
+            REQUIRE(cpu.sp == 0x0007);
+            REQUIRE_FALSE(cpu.zero);
+            REQUIRE_FALSE(cpu.subtract);
+            REQUIRE(cpu.halfCarry);
+            REQUIRE(cpu.carry);
+        }
 
-            REQUIRE(cpu.sp == 0x0000);
+        void instruction_ld_hl_sp_e8() {
+            memory[0x00] = 0xFF;
+            cpu.sp = 0x0008;
+
+            cpu.execute(0xF8);
+
+            REQUIRE(cpu.hl == 0x0007);
+            REQUIRE_FALSE(cpu.zero);
+            REQUIRE_FALSE(cpu.subtract);
+            REQUIRE(cpu.halfCarry);
+            REQUIRE(cpu.carry);
         }
 
         void cpFlags() {
@@ -299,10 +315,10 @@ class SM83Tests {
             REQUIRE(cpu.halfCarry);
         }
 
-        void cplResultAndFlags() {
+        void instruction_cpl() {
             cpu.a = 0b10101010;
 
-            cpu.cpl();
+            cpu.execute(0x2F);
 
             REQUIRE(cpu.a == 0b01010101);
             REQUIRE(cpu.subtract);
@@ -351,11 +367,11 @@ class SM83Tests {
             REQUIRE_FALSE(cpu.carry);
         }
 
-        void rlaResultAndFlags() {
+        void rlResultAndFlags() {
             cpu.a = 0b00000001;
             cpu.carry = true;
 
-            cpu.rla();
+            cpu.rl(cpu.a);
 
             REQUIRE(cpu.a == 0b00000011);
             REQUIRE_FALSE(cpu.carry);
@@ -364,10 +380,10 @@ class SM83Tests {
             REQUIRE_FALSE(cpu.halfCarry);
         }
 
-        void rlcaResultAndFlags() {
+        void rlcResultAndFlags() {
             cpu.a = 0b10000000;
 
-            cpu.rlca();
+            cpu.rlc(cpu.a);
 
             REQUIRE(cpu.a == 0b00000001);
             REQUIRE(cpu.carry);
@@ -376,11 +392,11 @@ class SM83Tests {
             REQUIRE_FALSE(cpu.halfCarry);
         }
 
-        void rraResultAndFlags() {
+        void rrResultAndFlags() {
             cpu.a = 0b10000000;
             cpu.carry = true;
 
-            cpu.rra();
+            cpu.rr(cpu.a);
 
             REQUIRE(cpu.a == 0b11000000);
             REQUIRE_FALSE(cpu.carry);
@@ -389,15 +405,170 @@ class SM83Tests {
             REQUIRE_FALSE(cpu.halfCarry);
         }
 
-        void rrcaResultAndFlags() {
+        void rrcResultAndFlags() {
             cpu.a = 0b00000001;
 
-            cpu.rrca();
+            cpu.rrc(cpu.a);
 
             REQUIRE(cpu.a == 0b10000000);
             REQUIRE(cpu.carry);
             REQUIRE_FALSE(cpu.zero);
             REQUIRE_FALSE(cpu.subtract);
+            REQUIRE_FALSE(cpu.halfCarry);
+        }
+
+        void instruction_sla_r8() {
+            cpu.a = 0b10000000;
+
+            cpu.executeCB(0x27);
+
+            REQUIRE(cpu.a == 0);
+            REQUIRE(cpu.zero);
+            REQUIRE_FALSE(cpu.subtract);
+            REQUIRE_FALSE(cpu.halfCarry);
+            REQUIRE(cpu.carry);
+        }
+
+        void instruction_sra_r8() {
+            cpu.a = 0b10000001;
+
+            cpu.executeCB(0x2F);
+
+            REQUIRE(cpu.a == 0b11000000);
+            REQUIRE_FALSE(cpu.zero);
+            REQUIRE_FALSE(cpu.subtract);
+            REQUIRE_FALSE(cpu.halfCarry);
+            REQUIRE(cpu.carry);
+        }
+
+        void instruction_srl_r8() {
+            cpu.a = 0b00000001;
+
+            cpu.executeCB(0x3F);
+
+            REQUIRE(cpu.a == 0);
+            REQUIRE(cpu.zero);
+            REQUIRE_FALSE(cpu.subtract);
+            REQUIRE_FALSE(cpu.halfCarry);
+            REQUIRE(cpu.carry);
+        }
+
+        void instruction_swap_r8() {
+            cpu.a = 0b11110000;
+            cpu.zero = true;
+            
+            cpu.executeCB(0x37);
+            
+            REQUIRE(cpu.a == 0b00001111);
+            REQUIRE_FALSE(cpu.zero);
+            REQUIRE_FALSE(cpu.subtract);
+            REQUIRE_FALSE(cpu.halfCarry);
+            REQUIRE_FALSE(cpu.carry);
+        }
+
+        void popRegistersAndStack() {
+            cpu.sp = 0x0100;
+            memory[0x0100] = 0xCD;
+            memory[0x0101] = 0xAB;
+
+            uint16_t value = cpu.pop();
+
+            REQUIRE(value == 0xABCD);
+            REQUIRE(cpu.sp == 0x102);
+        }
+
+        void instruction_pop_af() {
+            cpu.sp = 0x0100;
+            memory[0x0100] = 0b11111111;
+            memory[0x0101] = 0xAB;
+
+            cpu.execute(0xF1);
+
+            REQUIRE(cpu.f == 0b11110000);
+        }
+
+        void pushRegistersAndStack() {
+            cpu.bc = 0xABCD;
+            cpu.sp = 0x0100;
+
+            cpu.push(cpu.bc);
+
+            REQUIRE(cpu.sp == 0x00FE);
+            REQUIRE(memory[0x00FF] == 0xAB);
+            REQUIRE(memory[0x00FE] == 0xCD);
+        }
+
+        void callRegistersAndStack() {
+            cpu.pc = 0xDCBB;
+            cpu.sp = 0x0100;
+            memory[0xDCBB] = 0xCD;
+            memory[0xDCBC] = 0xAB;
+
+            cpu.call(cpu.fetchWord());
+
+            REQUIRE(cpu.pc == 0xABCD);
+            REQUIRE(cpu.sp == 0x00FE);
+            REQUIRE(memory[0xFE] == 0xBD);
+            REQUIRE(memory[0xFF] == 0xDC);
+        }
+
+        void retRegistersAndStack() {
+            cpu.pc = 0xABCD;
+            cpu.sp = 0x0100;
+            memory[0x0100] = 0x11;
+            memory[0x0101] = 0xBA;
+
+            cpu.pc = cpu.pop();
+
+            REQUIRE(cpu.pc == 0xBA11);
+            REQUIRE(cpu.sp == 0x0102);
+        }
+
+        void instruction_bit_u3_r8() {
+            cpu.a = 0b00100000;
+            cpu.zero = true;
+
+            cpu.executeCB(0x77);
+
+            REQUIRE_FALSE(cpu.zero);
+        }
+
+        void instruction_res_u3_r8() {
+            cpu.a = 0b01000000;
+
+            cpu.executeCB(0xB7);
+
+            REQUIRE(cpu.a == 0);
+        }
+
+        void instruction_set_u3_r8() {
+            cpu.a = 0;
+
+            cpu.executeCB(0xF7);
+
+            REQUIRE(cpu.a == 0b01000000);
+        }
+
+        void instruction_daa() {
+            cpu.a = 0x12;
+            cpu.halfCarry = true;
+
+            cpu.execute(0x27);
+
+            REQUIRE(cpu.a == 0x18);
+            REQUIRE_FALSE(cpu.zero);
+            REQUIRE_FALSE(cpu.halfCarry);
+            REQUIRE_FALSE(cpu.carry);
+
+            cpu.a = 0x33;
+            cpu.subtract = true;
+
+            cpu.execute(0x27);
+
+            REQUIRE(cpu.a == 0x33);
+            REQUIRE_FALSE(cpu.zero);
+            REQUIRE(cpu.subtract);
+            REQUIRE_FALSE(cpu.carry);
             REQUIRE_FALSE(cpu.halfCarry);
         }
 };
@@ -418,7 +589,8 @@ METHOD_AS_TEST_CASE(SM83Tests::addResult, "ADD Correct Result", "[Arithmetic][ad
 METHOD_AS_TEST_CASE(SM83Tests::addFlags, "ADD Correct Flags", "[Arithmetic][add]")
 METHOD_AS_TEST_CASE(SM83Tests::addRegisterPairResult, "ADD Register Pair Result", "[Arithmetic][add][RegisterPair]")
 METHOD_AS_TEST_CASE(SM83Tests::addRegisterPairFlags, "ADD Register Pair Flags", "[Arithmetic][add][RegisterPair]")
-METHOD_AS_TEST_CASE(SM83Tests::addRelativeResult, "ADD Relative Result", "[Arithmetic][add]")
+METHOD_AS_TEST_CASE(SM83Tests::instruction_add_sp_e8, "Instruction: add sp, e8", "[Instruction][add]")
+METHOD_AS_TEST_CASE(SM83Tests::instruction_ld_hl_sp_e8, "Instruction: ld hl, sp+e8", "[Instruction][ld]")
 METHOD_AS_TEST_CASE(SM83Tests::cpFlags, "CP Flags", "[Arithmetic][cp]")
 METHOD_AS_TEST_CASE(SM83Tests::decResult, "DEC Result", "[Arithmetic][dec]")
 METHOD_AS_TEST_CASE(SM83Tests::decFlags, "DEC Flags", "[Arithmetic][dec]")
@@ -430,12 +602,25 @@ METHOD_AS_TEST_CASE(SM83Tests::subResult, "SUB Result", "[Arithmetic][sub]")
 METHOD_AS_TEST_CASE(SM83Tests::subFlags, "SUB Flags", "[Arithmetic][sub]")
 METHOD_AS_TEST_CASE(SM83Tests::andResult, "AND Result", "[Logic][and]")
 METHOD_AS_TEST_CASE(SM83Tests::andFlags, "AND Flags", "[Logic][and]")
-METHOD_AS_TEST_CASE(SM83Tests::cplResultAndFlags, "CPL Result and Flags", "[Logic][cpl]")
+METHOD_AS_TEST_CASE(SM83Tests::instruction_cpl, "Instruction cpl", "[Instruction][cpl]")
 METHOD_AS_TEST_CASE(SM83Tests::orResult, "OR Result", "[Logic][or]")
 METHOD_AS_TEST_CASE(SM83Tests::orFlags, "OR Flags", "[Logic][or]")
 METHOD_AS_TEST_CASE(SM83Tests::xorResult, "XOR Result", "[Logic][xor]")
 METHOD_AS_TEST_CASE(SM83Tests::xorFlags, "XOR Flags", "[Logic][xor]")
-METHOD_AS_TEST_CASE(SM83Tests::rlaResultAndFlags, "RLA Result and Flags", "[Shift][rla]")
-METHOD_AS_TEST_CASE(SM83Tests::rlcaResultAndFlags, "RLCA Result and Flags", "[Shift][rlca]")
-METHOD_AS_TEST_CASE(SM83Tests::rraResultAndFlags, "RRA Result and Flags", "[Shift][rra]")
-METHOD_AS_TEST_CASE(SM83Tests::rrcaResultAndFlags, "RRCA Result and Flags", "[Shift][rrca]")
+METHOD_AS_TEST_CASE(SM83Tests::rlResultAndFlags, "RL Result and Flags", "[Shift][rl]")
+METHOD_AS_TEST_CASE(SM83Tests::rlcResultAndFlags, "RLC Result and Flags", "[Shift][rlc]")
+METHOD_AS_TEST_CASE(SM83Tests::rrResultAndFlags, "RR Result and Flags", "[Shift][rr]")
+METHOD_AS_TEST_CASE(SM83Tests::rrcResultAndFlags, "RRC Result and Flags", "[Shift][rrc]")
+METHOD_AS_TEST_CASE(SM83Tests::instruction_sla_r8, "Instruction: sla r8", "[Instruction][sla]")
+METHOD_AS_TEST_CASE(SM83Tests::instruction_sra_r8, "Instruction: sra r8", "[Instruction][sra]")
+METHOD_AS_TEST_CASE(SM83Tests::instruction_srl_r8, "Instruction: srl r8", "[Instruction][srl]")
+METHOD_AS_TEST_CASE(SM83Tests::instruction_swap_r8, "Instruction: swap r8", "[Instruction][swap]")
+METHOD_AS_TEST_CASE(SM83Tests::popRegistersAndStack, "POP Registers and Stack", "[Stack][pop]")
+METHOD_AS_TEST_CASE(SM83Tests::instruction_pop_af, "Instruction: pop af", "[Instruction][pop]")
+METHOD_AS_TEST_CASE(SM83Tests::pushRegistersAndStack, "PUSH Registers and Stack", "[Stack][push]")
+METHOD_AS_TEST_CASE(SM83Tests::callRegistersAndStack, "CALL Registers and Stack", "[Control][call]")
+METHOD_AS_TEST_CASE(SM83Tests::retRegistersAndStack, "RET Registers and Stack", "[Control][ret]")
+METHOD_AS_TEST_CASE(SM83Tests::instruction_bit_u3_r8, "Instruction: bit u3, r8", "[Instruction][bit]")
+METHOD_AS_TEST_CASE(SM83Tests::instruction_res_u3_r8, "Instruction: res u3, r8", "[Instruction][res]")
+METHOD_AS_TEST_CASE(SM83Tests::instruction_set_u3_r8, "Instruction: set u3, r8", "[Instruction][set]")
+METHOD_AS_TEST_CASE(SM83Tests::instruction_daa, "Instruction: daa", "[Instruction][daa]")
