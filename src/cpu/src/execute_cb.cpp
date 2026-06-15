@@ -95,7 +95,11 @@ void SM83::executeCB(uint8_t opcode) {
         }
 
         // bit u3, r8
-        case 0b01: zero = value >> b3 & 1; break;
+        case 0b01: 
+            zero = !(value >> b3 & 1); 
+            subtract = false;
+            halfCarry = true;
+            break;
         
         // res u3, r8
         case 0b10: value &= ~(1 << b3); break;

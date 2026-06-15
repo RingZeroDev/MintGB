@@ -1,0 +1,4 @@
+[submodule "SingleStepTests/sm83"]
+    path = tests/roms/sm83
+    url = https://github.com/SingleStepTests/sm83.git
+    branch = main

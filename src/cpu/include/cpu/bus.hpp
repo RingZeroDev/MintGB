@@ -2,12 +2,27 @@
 
 #include <cstdint>
 #include <array>
+#include <vector>
+#include <optional>
 
 /* The common bus interface for the cpu to interact with peripherals */
 struct Bus {
     virtual uint8_t read(uint16_t addr) = 0;
     virtual void write(uint16_t addr, uint8_t val) = 0;
+    virtual void cycle() = 0;
     virtual ~Bus() = default;
+};
+
+enum class AccessType {
+    Read,
+    Write,
+    None
+};
+
+struct BusAccess {
+    uint16_t addr;
+    uint8_t value;
+    AccessType type;
 };
 
 /* A basic bus implementation for testing purposes
@@ -18,8 +33,11 @@ class MemoryBus : public Bus {
         std::array<uint8_t, 65536>& memory;
 
     public:
+        std::vector<BusAccess> accesses;
+
         MemoryBus(std::array<uint8_t, 65536>& memory);
 
         uint8_t read(uint16_t addr);
         void write(uint16_t addr, uint8_t value);
+        void cycle();
 };

@@ -16,6 +16,10 @@ class SM83Tests {
         SM83 cpu { bus };
 
     public:
+        SM83Tests() {
+            bus.accesses.push_back(BusAccess { 0x0000, 0x00, AccessType::None });
+        }
+
         void registerPairDecomp() {
             uint8_t low = 0;
             uint8_t high = 0;
@@ -526,11 +530,11 @@ class SM83Tests {
 
         void instruction_bit_u3_r8() {
             cpu.a = 0b00100000;
-            cpu.zero = true;
+            cpu.zero = false;
 
             cpu.executeCB(0x77);
 
-            REQUIRE_FALSE(cpu.zero);
+            REQUIRE(cpu.zero);
         }
 
         void instruction_res_u3_r8() {

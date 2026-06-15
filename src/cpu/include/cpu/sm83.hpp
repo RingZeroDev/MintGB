@@ -9,6 +9,7 @@
 
 class SM83 {
     friend class SM83Tests;
+    friend class SingleStepTests;
 
     private:
         Bus& bus;
@@ -34,15 +35,18 @@ class SM83 {
         void writeByte(uint16_t addr, uint8_t value);
         void writeWord(uint16_t addr, uint16_t value);
 
+        void cycle();
+
         uint8_t fetchByte();
         uint16_t fetchWord();
         int8_t fetchRelative();
 
         void execute(uint8_t opcode);
         void executeCB(uint8_t opcode);
+        void step();
 
-        uint8_t carryCompare(uint8_t value, uint8_t res);
-        uint16_t carryCompare(uint16_t value, uint16_t res);
+        uint16_t carryCompare(uint8_t value, uint16_t res);
+        uint32_t carryCompare(uint16_t value, uint32_t res);
         uint8_t carryCompare(uint16_t reg, int8_t offset, uint16_t res);
 
         void adc(uint8_t value);

@@ -33,6 +33,21 @@ add_executable(tests
 target_link_libraries(tests Catch2::Catch2WithMain SM83)
 target_include_directories(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+add_library(json INTERFACE)
+target_include_directories(json INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/nlohmann)
+
+add_executable(single_step_tests
+    tests/single_step_tests.cpp
+)
+
+target_include_directories(single_step_tests 
+    PRIVATE 
+        ${CMAKE_CURRENT_SOURCE_DIR}/include        
+)
+
+target_precompile_headers(single_step_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/nlohmann/json.hpp)
+target_link_libraries(single_step_tests json SM83)
+
 include(CTest)
 include(Catch)
 catch_discover_tests(tests)

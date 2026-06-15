@@ -22,6 +22,10 @@ void SM83::writeWord(uint16_t addr, uint16_t value) {
     bus.write(addr+1, value >> 8);
 }
 
+void SM83::cycle() {
+    bus.cycle();
+}
+
 uint8_t SM83::fetchByte() {
     return readByte(pc++);
 }
@@ -36,5 +40,9 @@ int8_t SM83::fetchRelative() {
     return static_cast<int8_t>(fetchByte());
 }
 
+void SM83::step() {
+    uint8_t opcode = fetchByte();
+    execute(opcode);
+}
 
 

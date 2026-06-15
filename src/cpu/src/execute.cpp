@@ -133,6 +133,9 @@ void SM83::execute(uint8_t opcode) {
         // ld a, [hl-]
         case 0x3A: a = readByte(hl--); break;
 
+        // ld [n16], sp
+        case 0x08: writeWord(fetchWord(), sp); break;
+
         // adc a, r8
         case 0x8F: adc(a); break;
         case 0x88: adc(b); break;
@@ -171,6 +174,9 @@ void SM83::execute(uint8_t opcode) {
         case 0xBB: cp(e); break;
         case 0xBC: cp(h); break;
         case 0xBD: cp(l); break;
+
+        // cp a, (hl)
+        case 0xBE: cp(readByte(hl)); break;
 
         // cp a, n8
         case 0xFE: cp(fetchByte()); break;
@@ -240,22 +246,22 @@ void SM83::execute(uint8_t opcode) {
         case 0xD6: sub(fetchByte()); break;
 
         // add hl, r16
-        case 0x09: add(bc); break;
-        case 0x19: add(de); break;
-        case 0x29: add(hl); break;
-        case 0x39: add(sp); break;
+        case 0x09: add(bc); cycle(); break;
+        case 0x19: add(de); cycle(); break;
+        case 0x29: add(hl); cycle(); break;
+        case 0x39: add(sp); cycle(); break;
 
         // dec r16
-        case 0x0B: bc--; break;
-        case 0x1B: de--; break;
-        case 0x2B: hl--; break;
-        case 0x3B: sp--; break;
+        case 0x0B: bc--; cycle(); break;
+        case 0x1B: de--; cycle(); break;
+        case 0x2B: hl--; cycle(); break;
+        case 0x3B: sp--; cycle(); break;
 
         // inc r16
-        case 0x03: bc++; break;
-        case 0x13: de++; break;
-        case 0x23: hl++; break;
-        case 0x33: sp++; break;
+        case 0x03: bc++; cycle(); break;
+        case 0x13: de++; cycle(); break;
+        case 0x23: hl++; cycle(); break;
+        case 0x33: sp++; cycle(); break;
 
         // and a, r8
         case 0xA7: and_(a); break;
@@ -346,7 +352,7 @@ void SM83::execute(uint8_t opcode) {
         case 0xE9: pc = hl; break;
 
         // jp n16
-        case 0xC3: pc = fetchWord(); break;
+        case 0xC3: pc = fetchWord(); cycle(); break;
 
         // jp cc, n16
         case 0xC2: jp(!zero, fetchWord()); break;
@@ -355,7 +361,7 @@ void SM83::execute(uint8_t opcode) {
         case 0xDA: jp(carry, fetchWord()); break;
 
         // jr n16
-        case 0x18: pc += fetchRelative(); break;
+        case 0x18: pc += fetchRelative(); cycle(); break;
 
         // jr cc, n16
         case 0x20: jr(!zero, fetchRelative()); break;
@@ -364,7 +370,7 @@ void SM83::execute(uint8_t opcode) {
         case 0x38: jr(carry, fetchRelative()); break;
 
         // ret
-        case 0xC9: pc = pop(); break;
+        case 0xC9: pc = pop(); cycle(); break;
 
         // ret cc
         case 0xC0: ret(!zero); break;
@@ -375,7 +381,8 @@ void SM83::execute(uint8_t opcode) {
         // reti
         case 0xD9:
             pc = pop();
-            imePending = true;
+            ime = true;
+            cycle();
             break;
 
         // rst vec
@@ -412,6 +419,8 @@ void SM83::execute(uint8_t opcode) {
             halfCarry = carryMask >> 4 & 1;
             carry = carryMask >> 8 & 1;
             sp = res;
+            cycle();
+            cycle();
             break;
         } 
 
@@ -425,8 +434,12 @@ void SM83::execute(uint8_t opcode) {
             halfCarry = carryMask >> 4 & 1;
             carry = carryMask >> 8 & 1;
             hl = res;
+            cycle();
             break;
         }
+
+        // ld sp, hl
+        case 0xF9: sp = hl; cycle(); break;
 
         // pop r16
         case 0xF1: 
@@ -450,7 +463,7 @@ void SM83::execute(uint8_t opcode) {
         case 0xFB: imePending = true; break;
 
         // halt
-        case 0x76: halted = true; break;
+        case 0x76: halted = true; cycle(); cycle(); break;
 
         // daa
         case 0x27: {
@@ -472,7 +485,6 @@ void SM83::execute(uint8_t opcode) {
             }
 
             zero = res == 0;
-            carry = carryCompare(a, res) >> 7 & 1;
             halfCarry = false;
             a = res;
             break;
@@ -482,7 +494,7 @@ void SM83::execute(uint8_t opcode) {
         case 0x00: break;
 
         // stop
-        case 0x10: stop(); break;
+        case 0x10: stop(); cycle(); cycle(); break;
 
         // CB opcode
         case 0xCB: executeCB(fetchByte()); break;

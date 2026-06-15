@@ -1,8 +1,11 @@
 #include "sm83.hpp"
 
 void SM83::push(uint16_t value) {
-    writeWord(sp-2, value);
-    sp -= 2;
+    cycle();
+    sp--;
+    writeByte(sp, value >> 8);
+    sp--;
+    writeByte(sp, value & 0xFF);
 }
 
 uint16_t SM83::pop() {
