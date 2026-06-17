@@ -26,6 +26,10 @@ void SM83::cycle() {
     bus.cycle();
 }
 
+void SM83::cycle(int amount) {
+    for (int i = 0; i < amount; i++) cycle();
+}
+
 uint8_t SM83::fetchByte() {
     return readByte(pc++);
 }
@@ -42,7 +46,13 @@ int8_t SM83::fetchRelative() {
 
 void SM83::step() {
     uint8_t opcode = fetchByte();
-    execute(opcode);
+
+    if (opcode == 0xCB) {
+        uint8_t cbOpcode = fetchByte();
+        executeCB(cbOpcode);
+    } else {
+        execute(opcode);
+    }
 }
 
 

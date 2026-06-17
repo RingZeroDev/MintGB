@@ -11,10 +11,13 @@ target_sources(SM83
         src/bus.cpp
         src/execute.cpp
         src/execute_cb.cpp
-        src/alu.cpp
-        src/stack.cpp
-        src/shift.cpp
-        src/control.cpp
+        src/instructions/x8_alu.cpp
+        src/instructions/x16_alu.cpp
+        src/instructions/x8_lsm.cpp
+        src/instructions/x16_lsm.cpp
+        src/instructions/control_br.cpp
+        src/instructions/control_misc.cpp
+        src/instructions/x8_rsb.cpp
 )
 
 target_include_directories(SM83 
