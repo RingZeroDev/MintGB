@@ -1,10 +1,10 @@
-#include "sm83.hpp"
+#include "cpu.hpp"
 
-uint16_t SM83::carryCompare(uint8_t value, uint16_t res) {
+uint16_t CPU::carryCompare(uint8_t value, uint16_t res) {
     return a ^ value ^ res;
 }
 
-void SM83::adc(uint8_t value) {
+void CPU::adc(uint8_t value) {
     uint16_t res = a + value + carry;
     uint16_t carryMask = carryCompare(value, res);
     zero = (res & 0xFF) == 0;
@@ -14,7 +14,7 @@ void SM83::adc(uint8_t value) {
     a = res;
 }
 
-void SM83::add(uint8_t value) {
+void CPU::add(uint8_t value) {
     uint16_t res = a + value;
     uint16_t carryMask = carryCompare(value, res);
     zero = (res & 0xFF) == 0;
@@ -24,7 +24,7 @@ void SM83::add(uint8_t value) {
     a = res;
 }
 
-void SM83::sbc(uint8_t value) {
+void CPU::sbc(uint8_t value) {
     uint16_t res = a - value - carry;
     uint16_t carryMask = carryCompare(value, res);
     zero = (res & 0xFF) == 0;
@@ -34,7 +34,7 @@ void SM83::sbc(uint8_t value) {
     a = res;
 }
 
-void SM83::sub(uint8_t value) {
+void CPU::sub(uint8_t value) {
     uint16_t res = a - value;
     uint16_t carryMask = carryCompare(value, res);
     zero = (res & 0xFF) == 0;
@@ -44,63 +44,63 @@ void SM83::sub(uint8_t value) {
     a = res;
 }
 
-void SM83::add_a_r8(uint8_t& r) {
+void CPU::add_a_r8(uint8_t& r) {
     add(r);
 }
 
-void SM83::add_a_ind_hl() {
+void CPU::add_a_ind_hl() {
     uint8_t value = readByte(hl);
     add(value);
 }
 
-void SM83::add_a_n8() {
+void CPU::add_a_n8() {
     uint8_t value = fetchByte();
     add(value);
 }
 
-void SM83::adc_a_r8(uint8_t& r) {
+void CPU::adc_a_r8(uint8_t& r) {
     adc(r);
 }
 
-void SM83::adc_a_ind_hl() {
+void CPU::adc_a_ind_hl() {
     uint8_t value = readByte(hl);
     adc(value);
 }
 
-void SM83::adc_a_n8() {
+void CPU::adc_a_n8() {
     uint8_t value = fetchByte();
     adc(value);
 }
 
-void SM83::sub_a_r8(uint8_t& r) {
+void CPU::sub_a_r8(uint8_t& r) {
     sub(r);
 }
 
-void SM83::sub_a_ind_hl() {
+void CPU::sub_a_ind_hl() {
     uint8_t value = readByte(hl);
     sub(value);
 }
 
-void SM83::sub_a_n8() {
+void CPU::sub_a_n8() {
     uint8_t value = fetchByte();
     sub(value);
 }
 
-void SM83::sbc_a_r8(uint8_t& r) {
+void CPU::sbc_a_r8(uint8_t& r) {
     sbc(r);
 }
 
-void SM83::sbc_a_ind_hl() {
+void CPU::sbc_a_ind_hl() {
     uint8_t value = readByte(hl);
     sbc(value);
 }
 
-void SM83::sbc_a_n8() {
+void CPU::sbc_a_n8() {
     uint8_t value = fetchByte();
     sbc(value);
 }
 
-void SM83::cp(uint8_t value) {
+void CPU::cp(uint8_t value) {
     uint16_t res = a - value;
     uint16_t carryMask = carryCompare(value, res);
     zero = (res & 0xFF) == 0;
@@ -109,7 +109,7 @@ void SM83::cp(uint8_t value) {
     carry = carryMask >> 8 & 1;
 }
 
-void SM83::dec(uint8_t& reg) {
+void CPU::dec(uint8_t& reg) {
     uint8_t res = reg - 1;
     zero = res == 0;
     subtract = true;
@@ -117,7 +117,7 @@ void SM83::dec(uint8_t& reg) {
     reg = res;
 }
 
-void SM83::inc(uint8_t& reg) {
+void CPU::inc(uint8_t& reg) {
     uint8_t res = reg + 1;
     zero = res == 0;
     subtract = false;
@@ -125,7 +125,7 @@ void SM83::inc(uint8_t& reg) {
     reg = res;
 }
 
-void SM83::and_(uint8_t value) {
+void CPU::and_(uint8_t value) {
     uint8_t res = a & value;
     zero = res == 0;
     subtract = false;
@@ -134,7 +134,7 @@ void SM83::and_(uint8_t value) {
     a = res;
 }
 
-void SM83::or_(uint8_t value) {
+void CPU::or_(uint8_t value) {
     uint8_t res = a | value;
     zero = res == 0;
     subtract = false;
@@ -143,7 +143,7 @@ void SM83::or_(uint8_t value) {
     a = res;
 }
 
-void SM83::xor_(uint8_t value) {
+void CPU::xor_(uint8_t value) {
     uint8_t res = a ^ value;
     zero = res == 0;
     subtract = false;
@@ -152,7 +152,7 @@ void SM83::xor_(uint8_t value) {
     a = res;
 }
 
-void SM83::daa() {
+void CPU::daa() {
     uint8_t res = a;
 
     if (subtract) {
@@ -175,95 +175,95 @@ void SM83::daa() {
     a = res;
 }
 
-void SM83::inc_r8(uint8_t& r) {
+void CPU::inc_r8(uint8_t& r) {
     inc(r);
 }
 
-void SM83::inc_ind_hl() {
+void CPU::inc_ind_hl() {
     uint8_t value = readByte(hl);
     inc(value);
     writeByte(hl, value);
 }
 
-void SM83::dec_r8(uint8_t& r) {
+void CPU::dec_r8(uint8_t& r) {
     dec(r);
 }
 
-void SM83::dec_ind_hl() {
+void CPU::dec_ind_hl() {
     uint8_t value = readByte(hl);
     dec(value);
     writeByte(hl, value);
 }
 
-void SM83::and_a_r8(uint8_t& r) {
+void CPU::and_a_r8(uint8_t& r) {
     and_(r);
 }
 
-void SM83::and_a_ind_hl() {
+void CPU::and_a_ind_hl() {
     uint8_t value = readByte(hl);
     and_(value);
 }
 
-void SM83::and_a_n8() {
+void CPU::and_a_n8() {
     uint8_t value = fetchByte();
     and_(value);
 }
 
-void SM83::or_a_r8(uint8_t& r) {
+void CPU::or_a_r8(uint8_t& r) {
     or_(r);
 }
 
-void SM83::or_a_ind_hl() {
+void CPU::or_a_ind_hl() {
     uint8_t value = readByte(hl);
     or_(value);
 }
 
-void SM83::or_a_n8() {
+void CPU::or_a_n8() {
     uint8_t value = fetchByte();
     or_(value);
 }
 
-void SM83::xor_a_r8(uint8_t& r) {
+void CPU::xor_a_r8(uint8_t& r) {
     xor_(r);
 }
 
-void SM83::xor_a_ind_hl() {
+void CPU::xor_a_ind_hl() {
     uint8_t value = readByte(hl);
     xor_(value);
 }
 
-void SM83::xor_a_n8() {
+void CPU::xor_a_n8() {
     uint8_t value = fetchByte();
     xor_(value);
 }
 
-void SM83::cp_a_r8(uint8_t& r) {
+void CPU::cp_a_r8(uint8_t& r) {
     cp(r);
 }
 
-void SM83::cp_a_ind_hl() {
+void CPU::cp_a_ind_hl() {
     uint8_t value = readByte(hl);
     cp(value);
 }
 
-void SM83::cp_a_n8() {
+void CPU::cp_a_n8() {
     uint8_t value = fetchByte();
     cp(value);
 }
 
-void SM83::cpl() {
+void CPU::cpl() {
     a = ~a; 
     subtract = true;
     halfCarry = true;
 }
 
-void SM83::ccf() {
+void CPU::ccf() {
     carry = !carry;
     halfCarry = false;
     subtract = false;
 }
 
-void SM83::scf() {
+void CPU::scf() {
     carry = true;
     halfCarry = false;
     subtract = false;

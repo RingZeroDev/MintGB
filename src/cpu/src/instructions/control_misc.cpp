@@ -1,23 +1,23 @@
-#include "sm83.hpp"
+#include "cpu.hpp"
 
-void SM83::di() {
+void CPU::di() {
     ime = false;
 }
 
-void SM83::ei() {
+void CPU::ei() {
     imePending = true;
 }
 
-void SM83::halt() {
+void CPU::halt() {
     halted = true; 
     cycle(2);
 }
 
-void SM83::nop() {
+void CPU::nop() {
     return;
 }
 
-void SM83::stop() {
+void CPU::stop() {
     halted = true; 
     cycle(2);
 }

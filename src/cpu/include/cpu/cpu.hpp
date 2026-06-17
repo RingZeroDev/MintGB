@@ -7,8 +7,8 @@
 #include <cstdint>
 #include <array>
 
-class SM83 {
-    friend class SM83Tests;
+class CPU {
+    friend class CPUTests;
     friend class SingleStepTests;
 
     protected:
@@ -42,8 +42,8 @@ class SM83 {
         uint16_t fetchWord();
         int8_t fetchRelative();
 
-        void execute(uint8_t opcode);
-        void executeCB(uint8_t opcode);
+        void decode(uint8_t opcode);
+        void decodeCB(uint8_t opcode);
         void step();
 
         uint16_t carryCompare(uint8_t value, uint16_t res);
@@ -223,5 +223,5 @@ class SM83 {
         void stop();
 
     public:
-        explicit SM83(Bus& bus);
+        explicit CPU(Bus& bus);
 };

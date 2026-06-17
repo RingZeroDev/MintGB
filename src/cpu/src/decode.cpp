@@ -1,4 +1,4 @@
-#include "sm83.hpp" 
+#include "cpu.hpp" 
 
 #include <stdexcept>
 #include <format>
@@ -10,7 +10,7 @@
 #define NZ !zero
 #define Z zero 
 
-void SM83::execute(uint8_t opcode) {
+void CPU::decode(uint8_t opcode) {
     switch (opcode) {
         // ld r8, r8
         INS(0x7F, ld_r8_r8, a, a);

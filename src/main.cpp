@@ -1,4 +1,4 @@
-#include "cpu/sm83.hpp"
+#include "cpu/cpu.hpp"
 
 int main() {
     return 0;

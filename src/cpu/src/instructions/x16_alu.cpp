@@ -1,10 +1,10 @@
-#include "sm83.hpp"
+#include "cpu.hpp"
 
-uint32_t SM83::carryCompare(uint16_t value, uint32_t res) {
+uint32_t CPU::carryCompare(uint16_t value, uint32_t res) {
     return hl ^ value ^ res;
 }
 
-void SM83::add(uint16_t value) {
+void CPU::add(uint16_t value) {
     uint32_t res = hl + value;
     uint32_t carryMask = carryCompare(value, res);
     subtract = false;
@@ -13,17 +13,17 @@ void SM83::add(uint16_t value) {
     hl = res;
 }
 
-void SM83::add_hl_r16(RegisterPair& rp) {
+void CPU::add_hl_r16(RegisterPair& rp) {
     add(rp);
     cycle();
 }
 
-void SM83::add_hl_sp() {
+void CPU::add_hl_sp() {
     add(sp);
     cycle();
 }
 
-void SM83::add_sp_e8() {
+void CPU::add_sp_e8() {
     int8_t value = fetchRelative();
     uint16_t res = sp + value;
     uint16_t carryMask = sp ^ static_cast<uint16_t>(value) ^ res;
@@ -35,22 +35,22 @@ void SM83::add_sp_e8() {
     cycle(2);
 }
 
-void SM83::inc_r16(RegisterPair& rp) {
+void CPU::inc_r16(RegisterPair& rp) {
     rp++;
     cycle();
 }
 
-void SM83::inc_sp() {
+void CPU::inc_sp() {
     sp++;
     cycle();
 }
 
-void SM83::dec_r16(RegisterPair& rp) {
+void CPU::dec_r16(RegisterPair& rp) {
     rp--;
     cycle();
 }
 
-void SM83::dec_sp() {
+void CPU::dec_sp() {
     sp--;
     cycle();
 }

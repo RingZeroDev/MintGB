@@ -1,8 +1,8 @@
-#include "sm83.hpp"
+#include "cpu.hpp"
 
 #define INS(opcode, operation, ...) case opcode: operation(__VA_ARGS__); break
 
-void SM83::executeCB(uint8_t opcode) {
+void CPU::decodeCB(uint8_t opcode) {
     switch (opcode) {
         // rlc r8
         INS(0x07, rlc_r8, a);

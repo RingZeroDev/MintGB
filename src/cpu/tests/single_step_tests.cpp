@@ -1,4 +1,4 @@
-#include "cpu/sm83.hpp"
+#include "cpu/cpu.hpp"
 
 #include "json.hpp"
 
@@ -15,7 +15,7 @@ class SingleStepTests {
         std::array<uint8_t, 0x10000> memory{};
         MemoryBus bus { memory };
 
-        SM83 cpu { bus };
+        CPU cpu { bus };
 
         json parseJson(const char* path) {
             std::ifstream f(path);
