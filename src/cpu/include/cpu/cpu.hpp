@@ -8,9 +8,6 @@
 #include <array>
 
 class CPU {
-    friend class CPUTests;
-    friend class SingleStepTests;
-
     protected:
         Bus& bus;
 
@@ -46,10 +43,6 @@ class CPU {
         void decodeCB(uint8_t opcode);
         void step();
 
-        uint16_t carryCompare(uint8_t value, uint16_t res);
-        uint32_t carryCompare(uint16_t value, uint32_t res);
-        uint8_t carryCompare(uint16_t reg, int8_t offset, uint16_t res);
-
         // Load instructions
 
         void ld_r8_r8(uint8_t& r1, uint8_t& r2);
@@ -73,9 +66,10 @@ class CPU {
 
         // 8-bit arithmetic instructions
 
+        uint16_t carryCompare(uint8_t value, uint16_t res);
+
         void adc(uint8_t value);
         void add(uint8_t value);
-        void add(uint16_t value);
         void cp(uint8_t value);
         void dec(uint8_t& reg);
         void inc(uint8_t& reg);
@@ -103,6 +97,10 @@ class CPU {
         void sub_a_n8();
 
         // 16-bit arithmetic instructions
+
+        uint32_t carryCompare(uint16_t value, uint32_t res);
+
+        void add(uint16_t value);
 
         void add_hl_r16(RegisterPair &rp);
         void dec_r16(RegisterPair &rp);

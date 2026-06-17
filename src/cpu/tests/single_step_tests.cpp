@@ -8,62 +8,72 @@
 #include <filesystem>
 #include <format>
 
-using json = nlohmann::json;
+using Json = nlohmann::json;
 
-class SingleStepTests {
+class SingleStepTests : private CPU {
     private:
         std::array<uint8_t, 0x10000> memory{};
         MemoryBus bus { memory };
 
         CPU cpu { bus };
 
-        json parseJson(const char* path) {
+        Json parseJson(const char* path) {
             std::ifstream f(path);
-            json data = json::parse(f);
+            Json data = Json::parse(f);
 
             return data;
         }
 
-        void setState(const json& state) {
-            cpu.a = state["a"].get<uint8_t>();
-            cpu.b = state["b"].get<uint8_t>();
-            cpu.c = state["c"].get<uint8_t>();
-            cpu.d = state["d"].get<uint8_t>();
-            cpu.e = state["e"].get<uint8_t>();
-            cpu.f = state["f"].get<uint8_t>();
-            cpu.h = state["h"].get<uint8_t>();
-            cpu.l = state["l"].get<uint8_t>();
-            
-            cpu.pc = state["pc"].get<uint16_t>();
-            cpu.sp = state["sp"].get<uint16_t>();
-            
-            cpu.ime = state["ime"].get<int>() == 1;
-            cpu.imePending = state["ie"].get<int>() == 1;
+        static constexpr std::array<uint8_t, 12> ILLEGAL_INSTRUCTIONS = {
+            0xCB, 0xD3, 0xDB, 0xDD, 0xE3, 0xE4, 0xEB, 0xEC, 0xED, 0xF4, 0xFC, 0xFD
+        };
 
-            for (const json& ramValue : state["ram"]) {
+        static constexpr std::array<const char*, 3> accessLut {{
+            "r-m",
+            "-wm",
+            "---"
+        }};
+
+        void setState(const Json& state) {
+            a = state["a"].get<uint8_t>();
+            b = state["b"].get<uint8_t>();
+            c = state["c"].get<uint8_t>();
+            d = state["d"].get<uint8_t>();
+            e = state["e"].get<uint8_t>();
+            f = state["f"].get<uint8_t>();
+            h = state["h"].get<uint8_t>();
+            l = state["l"].get<uint8_t>();
+            
+            pc = state["pc"].get<uint16_t>();
+            sp = state["sp"].get<uint16_t>();
+            
+            ime = state["ime"].get<int>() == 1;
+            imePending = state["ie"].get<int>() == 1;
+
+            for (const Json& ramValue : state["ram"]) {
                 uint16_t addr = ramValue[0];
                 uint8_t value = ramValue[1];
                 memory[addr] = value;
             }
         }
 
-        json getCPUState(const json& state) {
-            json cpuState = {
-                {"a", cpu.a},
-                {"b", cpu.b},
-                {"c", cpu.c},
-                {"d", cpu.d},
-                {"e", cpu.e},
-                {"f", cpu.f},
-                {"h", cpu.h},
-                {"l", cpu.l},
-                {"pc", cpu.pc},
-                {"sp", cpu.sp},
-                {"ime", cpu.ime ? 1 : 0},
-                {"ram", json::array()}
+        Json getCPUState(const Json& state) {
+            Json cpuState = {
+                {"a", a},
+                {"b", b},
+                {"c", c},
+                {"d", d},
+                {"e", e},
+                {"f", f},
+                {"h", h},
+                {"l", l},
+                {"pc", pc},
+                {"sp", sp},
+                {"ime", ime ? 1 : 0},
+                {"ram", Json::array()}
             };
 
-            for (const json& ramValue : state["ram"]) {
+            for (const Json& ramValue : state["ram"]) {
                 uint16_t addr = ramValue[0];
                 cpuState["ram"].push_back({addr, memory[addr]});
             }
@@ -71,24 +81,24 @@ class SingleStepTests {
             return cpuState;
         }
 
-        bool checkState(const json& state) {
+        bool checkState(const Json& state) {
             bool passed = true;
 
-            passed = passed && (cpu.a == state["a"].get<uint8_t>());
-            passed = passed && (cpu.b == state["b"].get<uint8_t>());
-            passed = passed && (cpu.c == state["c"].get<uint8_t>());
-            passed = passed && (cpu.d == state["d"].get<uint8_t>());
-            passed = passed && (cpu.e == state["e"].get<uint8_t>());
-            passed = passed && (cpu.f == state["f"].get<uint8_t>());
-            passed = passed && (cpu.h == state["h"].get<uint8_t>());
-            passed = passed && (cpu.l == state["l"].get<uint8_t>());
+            passed = passed && (a == state["a"].get<uint8_t>());
+            passed = passed && (b == state["b"].get<uint8_t>());
+            passed = passed && (c == state["c"].get<uint8_t>());
+            passed = passed && (d == state["d"].get<uint8_t>());
+            passed = passed && (e == state["e"].get<uint8_t>());
+            passed = passed && (f == state["f"].get<uint8_t>());
+            passed = passed && (h == state["h"].get<uint8_t>());
+            passed = passed && (l == state["l"].get<uint8_t>());
             
-            passed = passed && (cpu.pc == state["pc"].get<uint16_t>());
-            passed = passed && (cpu.sp == state["sp"].get<uint16_t>());
+            passed = passed && (pc == state["pc"].get<uint16_t>());
+            passed = passed && (sp == state["sp"].get<uint16_t>());
             
-            passed = passed && (cpu.ime == state["ime"].get<int>() == 1);
+            passed = passed && (ime == state["ime"].get<int>() == 1);
 
-            for (const json& ramValue : state["ram"]) {
+            for (const Json& ramValue : state["ram"]) {
                 uint16_t addr = ramValue[0];
                 uint8_t value = ramValue[1];
                 passed = passed && (memory[addr] == value);
@@ -97,14 +107,8 @@ class SingleStepTests {
             return passed;
         }
 
-        json getCycles() {
-            constexpr std::array<const char*, 3> accessLut {{
-            "r-m",
-            "-wm",
-            "---"
-            }};
-
-            json output = json::array();
+        Json getCycles() {
+            Json output = Json::array();
 
             for (const BusAccess& access : bus.accesses) {
                 output.push_back({ access.addr, access.value, accessLut[static_cast<int>(access.type)] });
@@ -113,27 +117,27 @@ class SingleStepTests {
             return output;
         }
 
-        bool checkCycles(const json& state) {
-            constexpr std::array<const char*, 3> accessLut {{
-            "r-m",
-            "-wm",
-            "---"
-            }};
-
+        bool checkCycles(const Json& state) {
             for (auto it = state.begin(); it != state.end(); ++it) {
-                const json& cycle = *it;
+                const Json& cycle = *it;
                 const BusAccess& access = bus.accesses[std::distance(state.begin(), it)];
 
-                if (access.addr != cycle[0].get<uint16_t>() || access.value != cycle[1].get<uint8_t>()) return false;
-                if (accessLut[static_cast<int>(access.type)] != cycle[2].get<std::string_view>()) return false;
+                uint16_t addr = cycle[0].get<uint16_t>();
+                uint8_t value = cycle[1].get<uint8_t>();
+                std::string_view accessType = cycle[2].get<std::string_view>();
+                
+                bool pinsRight = access.addr == addr && access.value == value;
+                bool accessTypeRight = accessLut[static_cast<int>(access.type)] == accessType;
+
+                if (!pinsRight || !accessTypeRight) return false;
             }
 
             return true;
         }
 
-        void runTest(const json& test) {
+        void runTest(const Json& test) {
             setState(test["initial"]);
-            cpu.step();
+            step();
             
             if (!checkState(test["final"]) || !checkCycles(test["cycles"])) {
                 std::cerr << "Test " << test["name"] << " failed!" << std::endl;
@@ -150,9 +154,9 @@ class SingleStepTests {
             std::filesystem::path p(path);
             std::cout << "Beginning instruction test: " << p.stem() << std::endl;
 
-            json data = parseJson(path);
+            Json data = parseJson(path);
 
-            for (const json& test : data) {
+            for (const Json& test : data) {
                 bus.accesses.clear();
                 runTest(test);
             }
@@ -161,9 +165,12 @@ class SingleStepTests {
         }
 
     public:
+        SingleStepTests() : CPU(bus) {}
+
         void runSuite(const char* path) {
+            // unprefixed instructions
             for (int i = 0x00; i <= 0xFF; i++) {
-                if (i == 0xCB || i == 0xD3 || i == 0xDB || i == 0xDD || i == 0xE3 || i == 0xE4 || i == 0xEB || i == 0xEC || i == 0xED || i == 0xF4 || i == 0xFC || i == 0xFD) {
+                if (std::ranges::find(ILLEGAL_INSTRUCTIONS, i) != ILLEGAL_INSTRUCTIONS.end()) {
                     continue;
                 }
 
@@ -174,6 +181,7 @@ class SingleStepTests {
                 testInstruction(final.string().c_str());
             }
 
+            // CB instructions
             for (int i = 0x00; i <= 0xFF; i++) {
                 std::filesystem::path folder(path);
                 std::filesystem::path file(std::format("CB {:02X}.json", i));

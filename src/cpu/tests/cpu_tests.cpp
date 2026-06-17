@@ -8,15 +8,13 @@
 #include "cpu/flags.hpp"
 #include "cpu/bus.hpp"
 
-class CPUTests {
+class CPUTests : private CPU {
     private:
         std::array<uint8_t, 0x10000> memory{};
         MemoryBus bus { memory };
 
-        CPU cpu { bus };
-
     public:
-        CPUTests() {
+        CPUTests() : CPU(bus) {
             bus.accesses.push_back(BusAccess { 0x0000, 0x00, AccessType::None });
         }
 
@@ -80,500 +78,500 @@ class CPUTests {
         }
 
         void instruction_ld_r8_r8() {
-            cpu.a = 32;
-            cpu.decode(0x47);
+            a = 32;
+            decode(0x47);
 
-            REQUIRE(cpu.b == 32);
+            REQUIRE(b == 32);
         }
 
         void instruction_ld_r8_imm8() {
             memory[0] = 0xAB;
 
-            cpu.decode(0x3E);
+            decode(0x3E);
 
-            REQUIRE(cpu.a == 0xAB);
+            REQUIRE(a == 0xAB);
         }
 
         void instruction_ld_r8_indirect_hl() {
             memory[0x100] = 0xAB;
-            cpu.hl = 0x100;
+            hl = 0x100;
 
-            cpu.decode(0x7E);
+            decode(0x7E);
 
-            REQUIRE(cpu.a == 0xAB);
+            REQUIRE(a == 0xAB);
         }
 
         void instruction_ld_a_r16mem() {
             memory[0x100] = 0xAB;
-            cpu.bc = 0x100;
+            bc = 0x100;
 
-            cpu.decode(0x0A);
+            decode(0x0A);
 
-            REQUIRE(cpu.a == 0xAB);
+            REQUIRE(a == 0xAB);
         }
 
         void adcResult() {
-            cpu.a = 5;
-            cpu.b = 7;
-            cpu.carry = true;
+            a = 5;
+            b = 7;
+            carry = true;
 
-            cpu.adc(cpu.b);
+            adc(b);
 
-            REQUIRE(cpu.a == 13);
+            REQUIRE(a == 13);
         } 
 
         void adcFlags() {
-            cpu.a = 0xFF;
-            cpu.b = 0x01;
-            cpu.subtract = true;
+            a = 0xFF;
+            b = 0x01;
+            subtract = true;
 
-            cpu.adc(cpu.b);
+            adc(b);
 
-            REQUIRE(cpu.carry);
-            REQUIRE(cpu.zero);
-            REQUIRE(cpu.halfCarry);
-            REQUIRE_FALSE(cpu.subtract);
+            REQUIRE(carry);
+            REQUIRE(zero);
+            REQUIRE(halfCarry);
+            REQUIRE_FALSE(subtract);
         }
 
         void addResult() {
-            cpu.a = 5;
-            cpu.b = 7;
-            cpu.carry = true;
+            a = 5;
+            b = 7;
+            carry = true;
 
-            cpu.add(cpu.b);
+            add(b);
 
-            REQUIRE(cpu.a == 12);
+            REQUIRE(a == 12);
         } 
 
         void addFlags() {
-            cpu.a = 0xFF;
-            cpu.b = 0x00;
-            cpu.subtract = true;
+            a = 0xFF;
+            b = 0x00;
+            subtract = true;
 
-            cpu.add(cpu.b);
+            add(b);
 
-            REQUIRE_FALSE(cpu.carry);
-            REQUIRE_FALSE(cpu.zero);
-            REQUIRE_FALSE(cpu.halfCarry);
-            REQUIRE_FALSE(cpu.subtract);
+            REQUIRE_FALSE(carry);
+            REQUIRE_FALSE(zero);
+            REQUIRE_FALSE(halfCarry);
+            REQUIRE_FALSE(subtract);
         }
 
         void addRegisterPairResult() {
-            cpu.hl = 0xFFFF;
-            cpu.bc = 0x0000;
-            cpu.carry = true;
+            hl = 0xFFFF;
+            bc = 0x0000;
+            carry = true;
 
-            cpu.add(cpu.bc);
+            add(bc);
 
-            REQUIRE(cpu.hl == 0xFFFF);
+            REQUIRE(hl == 0xFFFF);
         }
 
         void addRegisterPairFlags() {
-            cpu.hl = 0xFFFF;
-            cpu.bc = 0x0001;
+            hl = 0xFFFF;
+            bc = 0x0001;
 
-            cpu.add(cpu.bc);
+            add(bc);
 
-            REQUIRE(cpu.carry);
-            REQUIRE(cpu.halfCarry);
-            REQUIRE_FALSE(cpu.subtract);
+            REQUIRE(carry);
+            REQUIRE(halfCarry);
+            REQUIRE_FALSE(subtract);
         }
 
         void instruction_add_sp_e8() {
             memory[0x00] = 0xFF;
-            cpu.sp = 0x0008;
+            sp = 0x0008;
 
-            cpu.decode(0xE8);
+            decode(0xE8);
 
-            REQUIRE(cpu.sp == 0x0007);
-            REQUIRE_FALSE(cpu.zero);
-            REQUIRE_FALSE(cpu.subtract);
-            REQUIRE(cpu.halfCarry);
-            REQUIRE(cpu.carry);
+            REQUIRE(sp == 0x0007);
+            REQUIRE_FALSE(zero);
+            REQUIRE_FALSE(subtract);
+            REQUIRE(halfCarry);
+            REQUIRE(carry);
         }
 
         void instruction_ld_hl_sp_e8() {
             memory[0x00] = 0xFF;
-            cpu.sp = 0x0008;
+            sp = 0x0008;
 
-            cpu.decode(0xF8);
+            decode(0xF8);
 
-            REQUIRE(cpu.hl == 0x0007);
-            REQUIRE_FALSE(cpu.zero);
-            REQUIRE_FALSE(cpu.subtract);
-            REQUIRE(cpu.halfCarry);
-            REQUIRE(cpu.carry);
+            REQUIRE(hl == 0x0007);
+            REQUIRE_FALSE(zero);
+            REQUIRE_FALSE(subtract);
+            REQUIRE(halfCarry);
+            REQUIRE(carry);
         }
 
         void cpFlags() {
-            cpu.a = 0x00;
-            cpu.b = 0x01;
+            a = 0x00;
+            b = 0x01;
 
-            cpu.cp(cpu.b);
+            cp(b);
 
-            REQUIRE_FALSE(cpu.zero);
-            REQUIRE(cpu.carry);
-            REQUIRE(cpu.halfCarry);
-            REQUIRE(cpu.subtract);
+            REQUIRE_FALSE(zero);
+            REQUIRE(carry);
+            REQUIRE(halfCarry);
+            REQUIRE(subtract);
         }
 
         void decResult() {
-            cpu.a = 0x01;
+            a = 0x01;
             
-            cpu.dec(cpu.a);
+            dec(a);
 
-            REQUIRE(cpu.a == 0x00);
+            REQUIRE(a == 0x00);
         }
 
         void decFlags() {
-            cpu.a = 0x10;
+            a = 0x10;
 
-            cpu.dec(cpu.a);
+            dec(a);
 
-            REQUIRE_FALSE(cpu.zero);
-            REQUIRE(cpu.subtract);
-            REQUIRE(cpu.halfCarry);
-            REQUIRE_FALSE(cpu.carry);
+            REQUIRE_FALSE(zero);
+            REQUIRE(subtract);
+            REQUIRE(halfCarry);
+            REQUIRE_FALSE(carry);
         }
 
         void incResult() {
-            cpu.a = 0x00;
+            a = 0x00;
             
-            cpu.inc(cpu.a);
+            inc(a);
 
-            REQUIRE(cpu.a == 0x01);
+            REQUIRE(a == 0x01);
         }
 
         void incFlags() {
-            cpu.a = 0x0F;
+            a = 0x0F;
 
-            cpu.inc(cpu.a);
+            inc(a);
 
-            REQUIRE_FALSE(cpu.zero);
-            REQUIRE_FALSE(cpu.subtract);
-            REQUIRE(cpu.halfCarry);
-            REQUIRE_FALSE(cpu.carry);
+            REQUIRE_FALSE(zero);
+            REQUIRE_FALSE(subtract);
+            REQUIRE(halfCarry);
+            REQUIRE_FALSE(carry);
         }
 
         void sbcResult() {
-            cpu.a = 0xAB;
-            cpu.b = 0x03;
-            cpu.carry = true;
+            a = 0xAB;
+            b = 0x03;
+            carry = true;
 
-            cpu.sbc(cpu.b);
+            sbc(b);
 
-            REQUIRE(cpu.a == 0xA7);
+            REQUIRE(a == 0xA7);
         }
 
         void sbcFlags() {
-            cpu.a = 0x42;
-            cpu.b = 0x42;
-            cpu.carry = true;
+            a = 0x42;
+            b = 0x42;
+            carry = true;
 
-            cpu.sbc(cpu.b);
+            sbc(b);
 
-            REQUIRE_FALSE(cpu.zero);
-            REQUIRE(cpu.subtract);
-            REQUIRE(cpu.halfCarry);
-            REQUIRE(cpu.carry);
+            REQUIRE_FALSE(zero);
+            REQUIRE(subtract);
+            REQUIRE(halfCarry);
+            REQUIRE(carry);
         }
 
         void subResult() {
-            cpu.a = 0xAB;
-            cpu.b = 0x03;
-            cpu.carry = true;
+            a = 0xAB;
+            b = 0x03;
+            carry = true;
 
-            cpu.sub(cpu.b);
+            sub(b);
 
-            REQUIRE(cpu.a == 0xA8);
+            REQUIRE(a == 0xA8);
         }
 
         void subFlags() {
-            cpu.a = 0x10;
-            cpu.b = 0x01;
+            a = 0x10;
+            b = 0x01;
 
-            cpu.sub(cpu.b);
+            sub(b);
 
-            REQUIRE_FALSE(cpu.zero);
-            REQUIRE(cpu.subtract);
-            REQUIRE(cpu.halfCarry);
-            REQUIRE_FALSE(cpu.carry);
+            REQUIRE_FALSE(zero);
+            REQUIRE(subtract);
+            REQUIRE(halfCarry);
+            REQUIRE_FALSE(carry);
         }
 
         void andResult() {
-            cpu.a = 0b11110000;
-            cpu.b = 0b00110000;
+            a = 0b11110000;
+            b = 0b00110000;
 
-            cpu.and_(cpu.b);
+            and_(b);
 
-            REQUIRE(cpu.a == 0b00110000);
+            REQUIRE(a == 0b00110000);
         }
 
         void andFlags() {
-            cpu.a = 0b11110000;
-            cpu.b = 0b00001111;
+            a = 0b11110000;
+            b = 0b00001111;
 
-            cpu.and_(cpu.b);
+            and_(b);
 
-            REQUIRE(cpu.zero);
-            REQUIRE(cpu.halfCarry);
+            REQUIRE(zero);
+            REQUIRE(halfCarry);
         }
 
         void instruction_cpl() {
-            cpu.a = 0b10101010;
+            a = 0b10101010;
 
-            cpu.decode(0x2F);
+            decode(0x2F);
 
-            REQUIRE(cpu.a == 0b01010101);
-            REQUIRE(cpu.subtract);
-            REQUIRE(cpu.subtract);
+            REQUIRE(a == 0b01010101);
+            REQUIRE(subtract);
+            REQUIRE(subtract);
         }
         
         void orResult() {
-            cpu.a = 0b10101010;
-            cpu.b = 0b01010101;
+            a = 0b10101010;
+            b = 0b01010101;
 
-            cpu.or_(cpu.b);
+            or_(b);
 
-            REQUIRE(cpu.a == 0b11111111);
+            REQUIRE(a == 0b11111111);
         }
 
         void orFlags() {
-            cpu.a = 0;
-            cpu.b = 0;
+            a = 0;
+            b = 0;
 
-            cpu.or_(cpu.b);
+            or_(b);
 
-            REQUIRE(cpu.zero);
-            REQUIRE_FALSE(cpu.subtract);
-            REQUIRE_FALSE(cpu.halfCarry);
-            REQUIRE_FALSE(cpu.carry);
+            REQUIRE(zero);
+            REQUIRE_FALSE(subtract);
+            REQUIRE_FALSE(halfCarry);
+            REQUIRE_FALSE(carry);
         }
 
         void xorResult() {
-            cpu.a = 0b00110000;
-            cpu.b = 0b01010000;
+            a = 0b00110000;
+            b = 0b01010000;
 
-            cpu.xor_(cpu.b);
+            xor_(b);
 
-            REQUIRE(cpu.a == 0b01100000);
+            REQUIRE(a == 0b01100000);
         }
 
         void xorFlags() {
-            cpu.a = 0;
-            cpu.b = 0;
+            a = 0;
+            b = 0;
 
-            cpu.xor_(cpu.b);
+            xor_(b);
 
-            REQUIRE(cpu.zero);
-            REQUIRE_FALSE(cpu.subtract);
-            REQUIRE_FALSE(cpu.halfCarry);
-            REQUIRE_FALSE(cpu.carry);
+            REQUIRE(zero);
+            REQUIRE_FALSE(subtract);
+            REQUIRE_FALSE(halfCarry);
+            REQUIRE_FALSE(carry);
         }
 
         void rlResultAndFlags() {
-            cpu.a = 0b00000001;
-            cpu.carry = true;
+            a = 0b00000001;
+            carry = true;
 
-            cpu.rl(cpu.a);
+            rl(a);
 
-            REQUIRE(cpu.a == 0b00000011);
-            REQUIRE_FALSE(cpu.carry);
-            REQUIRE_FALSE(cpu.zero);
-            REQUIRE_FALSE(cpu.subtract);
-            REQUIRE_FALSE(cpu.halfCarry);
+            REQUIRE(a == 0b00000011);
+            REQUIRE_FALSE(carry);
+            REQUIRE_FALSE(zero);
+            REQUIRE_FALSE(subtract);
+            REQUIRE_FALSE(halfCarry);
         }
 
         void rlcResultAndFlags() {
-            cpu.a = 0b10000000;
+            a = 0b10000000;
 
-            cpu.rlc(cpu.a);
+            rlc(a);
 
-            REQUIRE(cpu.a == 0b00000001);
-            REQUIRE(cpu.carry);
-            REQUIRE_FALSE(cpu.zero);
-            REQUIRE_FALSE(cpu.subtract);
-            REQUIRE_FALSE(cpu.halfCarry);
+            REQUIRE(a == 0b00000001);
+            REQUIRE(carry);
+            REQUIRE_FALSE(zero);
+            REQUIRE_FALSE(subtract);
+            REQUIRE_FALSE(halfCarry);
         }
 
         void rrResultAndFlags() {
-            cpu.a = 0b10000000;
-            cpu.carry = true;
+            a = 0b10000000;
+            carry = true;
 
-            cpu.rr(cpu.a);
+            rr(a);
 
-            REQUIRE(cpu.a == 0b11000000);
-            REQUIRE_FALSE(cpu.carry);
-            REQUIRE_FALSE(cpu.zero);
-            REQUIRE_FALSE(cpu.subtract);
-            REQUIRE_FALSE(cpu.halfCarry);
+            REQUIRE(a == 0b11000000);
+            REQUIRE_FALSE(carry);
+            REQUIRE_FALSE(zero);
+            REQUIRE_FALSE(subtract);
+            REQUIRE_FALSE(halfCarry);
         }
 
         void rrcResultAndFlags() {
-            cpu.a = 0b00000001;
+            a = 0b00000001;
 
-            cpu.rrc(cpu.a);
+            rrc(a);
 
-            REQUIRE(cpu.a == 0b10000000);
-            REQUIRE(cpu.carry);
-            REQUIRE_FALSE(cpu.zero);
-            REQUIRE_FALSE(cpu.subtract);
-            REQUIRE_FALSE(cpu.halfCarry);
+            REQUIRE(a == 0b10000000);
+            REQUIRE(carry);
+            REQUIRE_FALSE(zero);
+            REQUIRE_FALSE(subtract);
+            REQUIRE_FALSE(halfCarry);
         }
 
         void instruction_sla_r8() {
-            cpu.a = 0b10000000;
+            a = 0b10000000;
 
-            cpu.decodeCB(0x27);
+            decodeCB(0x27);
 
-            REQUIRE(cpu.a == 0);
-            REQUIRE(cpu.zero);
-            REQUIRE_FALSE(cpu.subtract);
-            REQUIRE_FALSE(cpu.halfCarry);
-            REQUIRE(cpu.carry);
+            REQUIRE(a == 0);
+            REQUIRE(zero);
+            REQUIRE_FALSE(subtract);
+            REQUIRE_FALSE(halfCarry);
+            REQUIRE(carry);
         }
 
         void instruction_sra_r8() {
-            cpu.a = 0b10000001;
+            a = 0b10000001;
 
-            cpu.decodeCB(0x2F);
+            decodeCB(0x2F);
 
-            REQUIRE(cpu.a == 0b11000000);
-            REQUIRE_FALSE(cpu.zero);
-            REQUIRE_FALSE(cpu.subtract);
-            REQUIRE_FALSE(cpu.halfCarry);
-            REQUIRE(cpu.carry);
+            REQUIRE(a == 0b11000000);
+            REQUIRE_FALSE(zero);
+            REQUIRE_FALSE(subtract);
+            REQUIRE_FALSE(halfCarry);
+            REQUIRE(carry);
         }
 
         void instruction_srl_r8() {
-            cpu.a = 0b00000001;
+            a = 0b00000001;
 
-            cpu.decodeCB(0x3F);
+            decodeCB(0x3F);
 
-            REQUIRE(cpu.a == 0);
-            REQUIRE(cpu.zero);
-            REQUIRE_FALSE(cpu.subtract);
-            REQUIRE_FALSE(cpu.halfCarry);
-            REQUIRE(cpu.carry);
+            REQUIRE(a == 0);
+            REQUIRE(zero);
+            REQUIRE_FALSE(subtract);
+            REQUIRE_FALSE(halfCarry);
+            REQUIRE(carry);
         }
 
         void instruction_swap_r8() {
-            cpu.a = 0b11110000;
-            cpu.zero = true;
+            a = 0b11110000;
+            zero = true;
             
-            cpu.decodeCB(0x37);
+            decodeCB(0x37);
             
-            REQUIRE(cpu.a == 0b00001111);
-            REQUIRE_FALSE(cpu.zero);
-            REQUIRE_FALSE(cpu.subtract);
-            REQUIRE_FALSE(cpu.halfCarry);
-            REQUIRE_FALSE(cpu.carry);
+            REQUIRE(a == 0b00001111);
+            REQUIRE_FALSE(zero);
+            REQUIRE_FALSE(subtract);
+            REQUIRE_FALSE(halfCarry);
+            REQUIRE_FALSE(carry);
         }
 
         void popRegistersAndStack() {
-            cpu.sp = 0x0100;
+            sp = 0x0100;
             memory[0x0100] = 0xCD;
             memory[0x0101] = 0xAB;
 
-            uint16_t value = cpu.pop();
+            uint16_t value = pop();
 
             REQUIRE(value == 0xABCD);
-            REQUIRE(cpu.sp == 0x102);
+            REQUIRE(sp == 0x102);
         }
 
         void instruction_pop_af() {
-            cpu.sp = 0x0100;
+            sp = 0x0100;
             memory[0x0100] = 0b11111111;
             memory[0x0101] = 0xAB;
 
-            cpu.decode(0xF1);
+            decode(0xF1);
 
-            REQUIRE(cpu.f == 0b11110000);
+            REQUIRE(f == 0b11110000);
         }
 
         void pushRegistersAndStack() {
-            cpu.bc = 0xABCD;
-            cpu.sp = 0x0100;
+            bc = 0xABCD;
+            sp = 0x0100;
 
-            cpu.push(cpu.bc);
+            push(bc);
 
-            REQUIRE(cpu.sp == 0x00FE);
+            REQUIRE(sp == 0x00FE);
             REQUIRE(memory[0x00FF] == 0xAB);
             REQUIRE(memory[0x00FE] == 0xCD);
         }
 
         void callRegistersAndStack() {
-            cpu.pc = 0xDCBB;
-            cpu.sp = 0x0100;
+            pc = 0xDCBB;
+            sp = 0x0100;
             memory[0xDCBB] = 0xCD;
             memory[0xDCBC] = 0xAB;
 
-            cpu.call(cpu.fetchWord());
+            call(fetchWord());
 
-            REQUIRE(cpu.pc == 0xABCD);
-            REQUIRE(cpu.sp == 0x00FE);
+            REQUIRE(pc == 0xABCD);
+            REQUIRE(sp == 0x00FE);
             REQUIRE(memory[0xFE] == 0xBD);
             REQUIRE(memory[0xFF] == 0xDC);
         }
 
         void retRegistersAndStack() {
-            cpu.pc = 0xABCD;
-            cpu.sp = 0x0100;
+            pc = 0xABCD;
+            sp = 0x0100;
             memory[0x0100] = 0x11;
             memory[0x0101] = 0xBA;
 
-            cpu.pc = cpu.pop();
+            pc = pop();
 
-            REQUIRE(cpu.pc == 0xBA11);
-            REQUIRE(cpu.sp == 0x0102);
+            REQUIRE(pc == 0xBA11);
+            REQUIRE(sp == 0x0102);
         }
 
         void instruction_bit_u3_r8() {
-            cpu.a = 0b00100000;
-            cpu.zero = false;
+            a = 0b00100000;
+            zero = false;
 
-            cpu.decodeCB(0x77);
+            decodeCB(0x77);
 
-            REQUIRE(cpu.zero);
+            REQUIRE(zero);
         }
 
         void instruction_res_u3_r8() {
-            cpu.a = 0b01000000;
+            a = 0b01000000;
 
-            cpu.decodeCB(0xB7);
+            decodeCB(0xB7);
 
-            REQUIRE(cpu.a == 0);
+            REQUIRE(a == 0);
         }
 
         void instruction_set_u3_r8() {
-            cpu.a = 0;
+            a = 0;
 
-            cpu.decodeCB(0xF7);
+            decodeCB(0xF7);
 
-            REQUIRE(cpu.a == 0b01000000);
+            REQUIRE(a == 0b01000000);
         }
 
         void instruction_daa() {
-            cpu.a = 0x12;
-            cpu.halfCarry = true;
+            a = 0x12;
+            halfCarry = true;
 
-            cpu.decode(0x27);
+            decode(0x27);
 
-            REQUIRE(cpu.a == 0x18);
-            REQUIRE_FALSE(cpu.zero);
-            REQUIRE_FALSE(cpu.halfCarry);
-            REQUIRE_FALSE(cpu.carry);
+            REQUIRE(a == 0x18);
+            REQUIRE_FALSE(zero);
+            REQUIRE_FALSE(halfCarry);
+            REQUIRE_FALSE(carry);
 
-            cpu.a = 0x33;
-            cpu.subtract = true;
+            a = 0x33;
+            subtract = true;
 
-            cpu.decode(0x27);
+            decode(0x27);
 
-            REQUIRE(cpu.a == 0x33);
-            REQUIRE_FALSE(cpu.zero);
-            REQUIRE(cpu.subtract);
-            REQUIRE_FALSE(cpu.carry);
-            REQUIRE_FALSE(cpu.halfCarry);
+            REQUIRE(a == 0x33);
+            REQUIRE_FALSE(zero);
+            REQUIRE(subtract);
+            REQUIRE_FALSE(carry);
+            REQUIRE_FALSE(halfCarry);
         }
 };
 

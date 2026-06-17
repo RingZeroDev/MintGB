@@ -432,7 +432,22 @@ void CPU::decode(uint8_t opcode) {
         // stop
         INS(0x10, stop);
 
-        default:
+        case 0xCB:
+        case 0xD3: 
+        case 0xDB: 
+        case 0xDD:
+        case 0xE3: 
+        case 0xE4: 
+        case 0xEB:
+        case 0xEC: 
+        case 0xED:
+        case 0xF4: 
+        case 0xFC:
+        case 0xFD:
             throw std::runtime_error(std::format("Illegal opcode reached: %02X", opcode));
+            break;
+
+        default:
+            throw std::runtime_error(std::format("Unimplemented opcode reached: %02X", opcode));
     }
 }
