@@ -444,10 +444,10 @@ void CPU::decode(uint8_t opcode) {
         case 0xF4: 
         case 0xFC:
         case 0xFD:
-            throw std::runtime_error(std::format("Illegal opcode reached: %02X", opcode));
+            throw std::runtime_error(std::format("Illegal opcode reached: {:02X}", opcode));
             break;
 
         default:
-            throw std::runtime_error(std::format("Unimplemented opcode reached: %02X", opcode));
+            throw std::runtime_error(std::format("Unimplemented opcode reached: {:02X}", opcode));
     }
 }

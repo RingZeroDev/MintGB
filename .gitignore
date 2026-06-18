@@ -70,3 +70,6 @@ Testing/
 
 # third party libraries
 src/cpu/thirdparty/
+
+# roms
+roms/

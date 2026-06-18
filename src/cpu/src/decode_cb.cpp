@@ -329,6 +329,6 @@ void CPU::decodeCB(uint8_t opcode) {
         INS(0xFE, set_u3_ind_hl, 7);
 
         default:
-            throw std::runtime_error(std::format("Unimplemented opcode reached: %02X", opcode));
+            throw std::runtime_error(std::format("Unimplemented opcode reached: {:02X}", opcode));
     }
 }

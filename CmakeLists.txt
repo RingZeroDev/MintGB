@@ -11,4 +11,9 @@ enable_testing()
 
 add_subdirectory(src/cpu)
 
+find_package(SDL3 REQUIRED)
+target_link_libraries(MintGB PRIVATE SDL3::SDL3)
+target_compile_definitions(MintGB PRIVATE SDL_MAIN_USE_CALLBACKS)
+target_link_options(MintGB PRIVATE -static)
+
 target_link_libraries(MintGB PRIVATE CPU)
