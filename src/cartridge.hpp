@@ -7,7 +7,7 @@
 #include "licensee.hpp"
 
 enum class CGBSupport : uint8_t {
-
+    
 };
 
 enum class CartridgeType : uint8_t {

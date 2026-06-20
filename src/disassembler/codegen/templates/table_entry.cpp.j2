@@ -1,0 +1,6 @@
+{% set opcode = opcodes["0x%02x" | format(i)] %}
+{% if opcode %}
+    { "{{opcode["mnemonic"]}}", {{getOperand(opcode, 1)}}, {{getOperand(opcode, 2)}}, {{opcode["length"]}} },
+{% else %}
+    { "ILLEGAL", Operand::None, Operand::None, 1 },
+{% endif %}

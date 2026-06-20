@@ -10,6 +10,7 @@ include(CTest)
 enable_testing()
 
 add_subdirectory(src/cpu)
+add_subdirectory(src/disassembler)
 
 find_package(SDL3 REQUIRED)
 target_link_libraries(MintGB PRIVATE SDL3::SDL3)
