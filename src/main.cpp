@@ -5,10 +5,20 @@
 #include <SDL3/SDL.h> 
 #include <SDL3/SDL_main.h>
 
+#include "cpu/cpu.hpp"
+#include "mmu/mmu.hpp"
+#include "cartridge/cartridge.hpp"
+#include "disassembler/disassembler.hpp"
+
+#include <memory>
+
 struct AppState {
     SDL_Window* window;
     SDL_Renderer* renderer;
     ImGuiIO& io;
+    Cartridge cart { "C:\\Users\\tpmac\\MintGB\\MintGB\\roms\\tetris.gb" };
+    MMU mmu { cart };
+    CPU cpu { mmu };
 };
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
@@ -50,6 +60,10 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
         io
     };
 
+    for (int i = 0; i < 20; i++) {
+        state->cpu.step();
+    }
+
     *appstate = static_cast<void*>(state);
 
     return SDL_APP_CONTINUE;
@@ -81,13 +95,46 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 
     ImGui::ShowDemoWindow();
 
+    CPUState cpuState = state->cpu.state();
     {
-        static float f = 0.0f;
-        static int counter = 0;
-
         ImGui::Begin("CPU Monitor");                         
 
-        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), "Registers");             
+        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("A: {:02X}", cpuState.a).c_str());
+        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("B: {:02X}", cpuState.b).c_str());
+        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("C: {:02X}", cpuState.c).c_str());
+        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("D: {:02X}", cpuState.d).c_str());
+        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("E: {:02X}", cpuState.e).c_str());
+        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("H: {:02X}", cpuState.h).c_str());
+        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("L: {:02X}", cpuState.l).c_str());             
+        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("F: {:02X}", cpuState.f).c_str());
+
+        if (ImGui::ArrowButton("step", ImGuiDir_Right)) {
+            state->cpu.step();
+        }
+
+        if (ImGui::ArrowButton("step100", ImGuiDir_Right)) {
+            for (int i = 0; i < 100; i++) {
+                state->cpu.step();
+            }
+        }
+
+        ImGui::End();
+    }
+
+    {
+        ImGui::Begin("Disassembly");                         
+
+        Disassembler dasm(state->mmu);
+        dasm.setCurrentAddr(cpuState.pc+10);
+
+        std::vector<std::string> ins = dasm.disassemble(20);
+        for (int i = 0; i < ins.size(); i++) {
+            if (i == 10) {
+                ImGui::TextColored(ImVec4(0.0, 1.0, 0.0, 1.0), ins[i].c_str());
+            } else {
+                ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), ins[i].c_str());
+            }
+        }
 
         ImGui::End();
     }

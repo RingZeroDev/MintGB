@@ -2,10 +2,18 @@
 
 #include "register.hpp"
 #include "flags.hpp"
-#include "bus.hpp"
+#include "mmu/bus.hpp"
 
 #include <cstdint>
 #include <array>
+
+struct CPUState {
+    uint16_t pc, sp, af, bc, de, hl;
+    uint8_t a, b, c, d, e, f, h, l;
+    
+    bool zero, subtract, halfCarry, carry;
+    bool ime, imePending, halted;
+};
 
 class CPU {
     protected:
@@ -41,7 +49,6 @@ class CPU {
 
         void decode(uint8_t opcode);
         void decodeCB(uint8_t opcode);
-        void step();
 
         // Load instructions
 
@@ -221,5 +228,7 @@ class CPU {
         void stop();
 
     public:
+        CPUState state();
+        void step();
         explicit CPU(Bus& bus);
 };

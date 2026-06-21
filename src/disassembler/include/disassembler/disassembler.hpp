@@ -1,5 +1,7 @@
 #pragma once
 
+#include "mmu/bus.hpp"
+
 #include <cstdint>
 #include <string_view>
 #include <array>
@@ -71,7 +73,7 @@ struct Instruction {
 
 class Disassembler {
     private:
-        uint8_t* memory;
+        Bus& bus;
         uint16_t currentAddr = 0x0000;
 
         static const Instruction& getUnprefixedInstruction(uint8_t opcode);
@@ -83,7 +85,8 @@ class Disassembler {
         std::string disassembleSingle();
 
     public:
-        Disassembler(uint8_t* memory);
+        Disassembler(Bus& bus);
+        void setCurrentAddr(uint16_t addr);
         std::vector<std::string> disassemble();
         std::vector<std::string> disassemble(unsigned int amount);
 };

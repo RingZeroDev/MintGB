@@ -1,6 +1,6 @@
 #include "cpu.hpp"
 
-#include "bus.hpp"
+#include "mmu/bus.hpp"
 #include "register.hpp"
 
 CPU::CPU(Bus& bus) : bus(bus) {}
@@ -53,6 +53,16 @@ void CPU::step() {
     } else {
         decode(opcode);
     }
+}
+
+CPUState CPU::state() {
+    return CPUState {
+        pc, sp, af, bc, de, hl,
+        a, b, c, d, e, f, h, l,
+
+        zero, subtract, halfCarry, carry,
+        ime, imePending, halted
+    };
 }
 
 

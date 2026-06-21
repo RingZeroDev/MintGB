@@ -1,9 +1,9 @@
-#pragma once
+#include "cartridge.hpp"
 
 #include <array>
 #include <string_view>
 
-inline constexpr auto oldLicenseeCodes = [] {
+constexpr std::array<std::string_view, 0x100> OLD_LICENSEE_CODES = [] {
     std::array<std::string_view, 0x100> t{};
 
     t[0x00] = "None";
@@ -48,7 +48,11 @@ inline constexpr auto oldLicenseeCodes = [] {
     return t;
 }();
 
-inline constexpr auto newLicenseeCodes = [] {
+std::string_view Cartridge::getOldLicensee(uint8_t code) {
+    return OLD_LICENSEE_CODES[code];
+}
+
+constexpr std::array<std::string_view, 0x100> NEW_LICENSEE_CODES = [] {
     std::array<std::string_view, 0x100> t{};
 
     t[0x00] = "None";
@@ -68,3 +72,7 @@ inline constexpr auto newLicenseeCodes = [] {
 
     return t;
 }();
+
+std::string_view Cartridge::getNewLicensee(uint8_t code) {
+    return NEW_LICENSEE_CODES[code];
+}

@@ -6,7 +6,7 @@
 #include "cpu/cpu.hpp"
 #include "cpu/register.hpp"
 #include "cpu/flags.hpp"
-#include "cpu/bus.hpp"
+#include "mmu/bus.hpp"
 
 class CPUTests : private CPU {
     private:

@@ -9,6 +9,8 @@ target_sources(MintGB PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
 include(CTest)
 enable_testing()
 
+add_subdirectory(src/cartridge)
+add_subdirectory(src/mmu)
 add_subdirectory(src/cpu)
 add_subdirectory(src/disassembler)
 
@@ -35,4 +37,4 @@ target_sources(imgui
 )
 target_link_libraries(imgui PUBLIC SDL3::SDL3)
 
-target_link_libraries(MintGB PRIVATE CPU imgui)
+target_link_libraries(MintGB PRIVATE CPU MMU Cartridge imgui Disassembler)

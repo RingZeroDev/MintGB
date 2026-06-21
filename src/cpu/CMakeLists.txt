@@ -8,7 +8,6 @@ target_sources(CPU
     PRIVATE 
         src/cpu.cpp
         src/register.cpp
-        src/bus.cpp
         src/decode.cpp
         src/decode_cb.cpp
         src/instructions/x8_alu.cpp
@@ -26,6 +25,8 @@ target_include_directories(CPU
     PUBLIC 
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
+
+target_link_libraries(CPU MMU)
 
 find_package(Catch2 3 REQUIRED)
 
@@ -49,7 +50,7 @@ target_include_directories(single_step_tests
 )
 
 target_precompile_headers(single_step_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/nlohmann/json.hpp)
-target_link_libraries(single_step_tests json CPU)
+target_link_libraries(single_step_tests json CPU MMU)
 
 include(CTest)
 include(Catch)

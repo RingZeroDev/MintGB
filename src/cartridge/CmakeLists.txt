@@ -1,0 +1,18 @@
+cmake_minimum_required(VERSION 3.10)
+project(Cartridge)
+set(CMAKE_CXX_STANDARD 20)
+
+add_library(Cartridge STATIC)
+
+target_sources(Cartridge
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/cartridge.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/licensee.cpp
+)
+
+target_include_directories(Cartridge
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/cartridge
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)

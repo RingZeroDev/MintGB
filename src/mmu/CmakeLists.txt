@@ -1,0 +1,20 @@
+cmake_minimum_required(VERSION 3.10)
+project(MMU)
+set(CMAKE_CXX_STANDARD 20)
+
+add_library(MMU STATIC)
+
+target_sources(MMU
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/bus.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/mmu.cpp
+)
+
+target_include_directories(MMU
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/mmu
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(MMU Cartridge)

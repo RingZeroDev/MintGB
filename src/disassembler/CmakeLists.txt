@@ -18,6 +18,8 @@ target_include_directories(Disassembler
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
+target_link_libraries(Disassembler MMU)
+
 add_executable(MintDasm)
 
 target_sources(MintDasm
@@ -30,4 +32,4 @@ target_include_directories(MintDasm
         ${CMAKE_CURRENT_SOURCE_DIR}/include/disassembler
 )
 
-target_link_libraries(MintDasm Disassembler)
+target_link_libraries(MintDasm Disassembler Cartridge MMU)
