@@ -10,6 +10,7 @@ include(CTest)
 enable_testing()
 
 add_subdirectory(src/cartridge)
+add_subdirectory(src/hardware)
 add_subdirectory(src/mmu)
 add_subdirectory(src/cpu)
 add_subdirectory(src/disassembler)
