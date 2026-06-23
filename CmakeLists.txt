@@ -24,6 +24,7 @@ target_include_directories(imgui
     PUBLIC 
         ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/imgui
         ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/imgui/backends
+        ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/imgui_club/imgui_memory_editor/
 )
 target_sources(imgui
     PRIVATE

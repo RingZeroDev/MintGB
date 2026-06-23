@@ -6,7 +6,7 @@
 CPU::CPU(Bus& bus) : bus(bus) {}
 
 uint8_t CPU::readByte(uint16_t addr) {
-        return bus.read(addr);
+    return bus.read(addr);
 }
 
 uint16_t CPU::readWord(uint16_t addr) {

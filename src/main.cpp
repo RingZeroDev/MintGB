@@ -1,6 +1,7 @@
 #include "imgui.h"
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_sdlrenderer3.h"
+#include "imgui_memory_editor.h"
 
 #include <SDL3/SDL.h> 
 #include <SDL3/SDL_main.h>
@@ -60,10 +61,6 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
         io
     };
 
-    for (int i = 0; i < 20; i++) {
-        state->cpu.step();
-    }
-
     *appstate = static_cast<void*>(state);
 
     return SDL_APP_CONTINUE;
@@ -99,6 +96,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     {
         ImGui::Begin("CPU Monitor");                         
 
+        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("PC: {:04X}", cpuState.pc).c_str());
         ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("A: {:02X}", cpuState.a).c_str());
         ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("B: {:02X}", cpuState.b).c_str());
         ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("C: {:02X}", cpuState.c).c_str());
@@ -125,17 +123,24 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         ImGui::Begin("Disassembly");                         
 
         Disassembler dasm(state->mmu);
-        dasm.setCurrentAddr(cpuState.pc+10);
+        dasm.setCurrentAddr(cpuState.pc);
 
         std::vector<std::string> ins = dasm.disassemble(20);
         for (int i = 0; i < ins.size(); i++) {
-            if (i == 10) {
+            if (i == 0) {
                 ImGui::TextColored(ImVec4(0.0, 1.0, 0.0, 1.0), ins[i].c_str());
             } else {
                 ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), ins[i].c_str());
             }
         }
 
+        ImGui::End();
+    }
+
+    static MemoryEditor memEdit;
+    {
+        ImGui::Begin("Memory");
+        memEdit.DrawContents(state->mmu.wram.data(), 0x2000, 0xC000);
         ImGui::End();
     }
 

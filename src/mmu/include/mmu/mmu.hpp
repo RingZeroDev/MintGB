@@ -3,14 +3,22 @@
 #include "bus.hpp"
 #include "cartridge/cartridge.hpp"
 
-class MMU : public Bus {
+class MMU final : public Bus {
     private:
         Cartridge& cart;
+
+        uint8_t readIO(uint8_t addr);
+        void writeIO(uint8_t addr, uint8_t value);
     
     public:
+        std::array<uint8_t, 0x2000> vram;
+        std::array<uint8_t, 0x2000> wram;
+        std::array<uint8_t, 160> oam;
+        std::array<uint8_t, 127> hram;
+
         MMU(Cartridge& cart);
 
-        uint8_t read(uint16_t addr);
-        void write(uint16_t addr, uint8_t value);
-        void cycle();
+        uint8_t read(uint16_t addr) override;
+        void write(uint16_t addr, uint8_t value) override;
+        void cycle() override;
 };
