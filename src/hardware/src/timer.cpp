@@ -39,7 +39,7 @@ uint8_t Timer::readTAC() {
     return tac;
 }
 
-constexpr std::array<uint8_t, 4> frequencies = {{ 256, 4, 16, 64 }}; 
+constexpr std::array<uint16_t, 4> frequencies = {{ 256, 4, 16, 64 }}; 
 
 void Timer::writeTAC(uint8_t value) {
     tac = value | 0b11111000;

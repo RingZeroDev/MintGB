@@ -9,6 +9,7 @@
 #include "cpu/cpu.hpp"
 #include "mmu/mmu.hpp"
 #include "cartridge/cartridge.hpp"
+#include "hardware/interrupt.hpp"
 #include "disassembler/disassembler.hpp"
 
 #include <memory>
@@ -19,7 +20,8 @@ struct AppState {
     ImGuiIO& io;
     Cartridge cart { "C:\\Users\\tpmac\\MintGB\\MintGB\\roms\\tetris.gb" };
     MMU mmu { cart };
-    CPU cpu { mmu };
+    InterruptSystem interrupt;
+    CPU cpu { mmu, interrupt };
 };
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
@@ -60,6 +62,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
         renderer,
         io
     };
+
+    state->interrupt.writeIE(static_cast<uint8_t>(InterruptSource::VBlank));
 
     *appstate = static_cast<void*>(state);
 
@@ -141,6 +145,20 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     {
         ImGui::Begin("Memory");
         memEdit.DrawContents(state->mmu.wram.data(), 0x2000, 0xC000);
+        ImGui::End();
+    }
+
+    {
+        ImGui::Begin("Interrupts");
+        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("IME: {}", cpuState.ime).c_str());
+        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("IME Pending: {}", cpuState.imePending).c_str());
+        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("IE: {:02X}", state->interrupt.readIE()).c_str());
+        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("IF: {:02X}", state->interrupt.readIF()).c_str());
+
+        if (ImGui::Button("Raise VBlank")) {
+            state->interrupt.issueInterrupt(InterruptSource::VBlank);
+        }
+
         ImGui::End();
     }
 

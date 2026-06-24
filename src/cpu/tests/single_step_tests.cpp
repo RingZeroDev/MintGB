@@ -1,4 +1,5 @@
 #include "cpu/cpu.hpp"
+#include "hardware/interrupt.hpp"
 
 #include "json.hpp"
 
@@ -14,8 +15,9 @@ class SingleStepTests : private CPU {
     private:
         std::array<uint8_t, 0x10000> memory{};
         MemoryBus bus { memory };
+        InterruptSystem dummyInterrupt;
 
-        CPU cpu { bus };
+        CPU cpu { bus, dummyInterrupt };
 
         Json parseJson(const char* path) {
             std::ifstream f(path);
@@ -165,7 +167,7 @@ class SingleStepTests : private CPU {
         }
 
     public:
-        SingleStepTests() : CPU(bus) {}
+        SingleStepTests() : CPU(bus, dummyInterrupt) {};
 
         void runSuite(const char* path) {
             // unprefixed instructions

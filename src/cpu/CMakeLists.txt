@@ -26,7 +26,7 @@ target_include_directories(CPU
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_link_libraries(CPU MMU)
+target_link_libraries(CPU MMU Hardware)
 
 find_package(Catch2 3 REQUIRED)
 

@@ -3,6 +3,7 @@
 #include "register.hpp"
 #include "flags.hpp"
 #include "mmu/bus.hpp"
+#include "hardware/interrupt.hpp"
 
 #include <cstdint>
 #include <array>
@@ -18,11 +19,13 @@ struct CPUState {
 class CPU {
     protected:
         Bus& bus;
+        InterruptSystem& interrupt;
 
         uint8_t a = 0x00, f = 0x00, b = 0x00, c = 0x00, d = 0x00, e = 0x00, h = 0x00, l = 0x00;
         uint16_t pc = 0x0000, sp = 0x0000;
 
-        bool ime = false, imePending = false, halted = false;
+        // Warning: testing purposes
+        bool ime = true, imePending = false, halted = false;
 
         RegisterPair af{ a, f };
         RegisterPair bc{ b, c };
@@ -42,6 +45,7 @@ class CPU {
 
         void cycle();
         void cycle(int amount);
+        void serviceInterrupt(uint8_t inte);
 
         uint8_t fetchByte();
         uint16_t fetchWord();
@@ -230,5 +234,5 @@ class CPU {
     public:
         CPUState state();
         void step();
-        explicit CPU(Bus& bus);
+        explicit CPU(Bus& bus, InterruptSystem& interrupt);
 };

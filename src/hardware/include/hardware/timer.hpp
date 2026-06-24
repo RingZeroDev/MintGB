@@ -9,7 +9,7 @@ class Timer {
         uint8_t tma; // TMA: Timer modulo
         uint8_t tac; // TAC: Timer control
 
-        uint8_t frequency;
+        uint16_t frequency;
 
     public:
         void cycle();

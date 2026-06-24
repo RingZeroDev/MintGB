@@ -12,8 +12,8 @@ enum class InterruptSource : uint8_t {
 
 class InterruptSystem {
     private:
-        uint8_t ie; // IE: Interrupt Enable
-        uint8_t if_; // IF: Interrupt Flag
+        uint8_t ie = 0b11100000; // IE: Interrupt Enable
+        uint8_t if_ = 0b11100000; // IF: Interrupt Flag
 
     public:
         uint8_t readIE();

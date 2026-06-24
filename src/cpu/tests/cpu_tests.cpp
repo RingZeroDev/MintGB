@@ -7,14 +7,16 @@
 #include "cpu/register.hpp"
 #include "cpu/flags.hpp"
 #include "mmu/bus.hpp"
+#include "hardware/interrupt.hpp"
 
 class CPUTests : private CPU {
     private:
         std::array<uint8_t, 0x10000> memory{};
         MemoryBus bus { memory };
+        InterruptSystem dummyInterrupt;
 
     public:
-        CPUTests() : CPU(bus) {
+        CPUTests() : CPU(bus, dummyInterrupt) {
             bus.accesses.push_back(BusAccess { 0x0000, 0x00, AccessType::None });
         }
 
