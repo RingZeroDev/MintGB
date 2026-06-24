@@ -28,14 +28,18 @@ class CPU::Tests {
     }
 
     void cpuStateGet() {
-        cpu.state(CPU::State {
+        cpu.state(CPU::State{
             .af = 0xABCD,
             .bc = 0xABCD,
             .de = 0xABCD,
             .hl = 0xABCD,
 
             .pc = 0xABCD,
-            .sp = 0xABCD
+            .sp = 0xABCD,
+
+            .ime = true,
+            .ei = true,
+            .halted = true
         });
 
         REQUIRE(cpu.af() == 0xABC0); // lower nibble gets cleared
@@ -45,6 +49,10 @@ class CPU::Tests {
 
         REQUIRE(cpu.pc == 0xABCD);
         REQUIRE(cpu.sp == 0xABCD);
+
+        REQUIRE(cpu.ime);
+        REQUIRE(cpu.ei);
+        REQUIRE(cpu.halted);
     }
 
     void cpuStateSet() {
@@ -56,27 +64,57 @@ class CPU::Tests {
         cpu.pc = 0xABCD;
         cpu.sp = 0xABCD;
 
-        REQUIRE(cpu.state() == CPU::State {
+        cpu.ime = true;
+        cpu.ei = true;
+        cpu.halted = true;
+
+        REQUIRE(cpu.state() == CPU::State{
             .af = 0xABC0, // lower nibble gets cleared
             .bc = 0xABCD,
             .de = 0xABCD,
             .hl = 0xABCD,
             
             .pc = 0xABCD,
-            .sp = 0xABCD
+            .sp = 0xABCD,
+
+            .ime = true,
+            .ei = true,
+            .halted = true
         });
     }
 
     void defaultState() {
-        REQUIRE(cpu.state() == CPU::State {
+        REQUIRE(cpu.state() == CPU::State{
             .af = 0x0000,
             .bc = 0x0000,
             .de = 0x0000,
             .hl = 0x0000,
 
             .pc = 0x0000,
-            .sp = 0x0000
+            .sp = 0x0000,
+
+            .ime = false,
+            .ei = false,
+            .halted = false
         });
+    }
+
+    void flagComp() {
+        cpu.f = 0xF0;
+
+        REQUIRE(cpu.zf());
+        REQUIRE(cpu.nf());
+        REQUIRE(cpu.hf());
+        REQUIRE(cpu.cf());
+    }
+
+    void flagDecomp() {
+        cpu.zf(true);
+        cpu.nf(true);
+        cpu.hf(true);
+        cpu.cf(true);
+
+        REQUIRE(cpu.f == 0xF0);
     }
 
     private:
@@ -89,5 +127,7 @@ METHOD_AS_TEST_CASE(CPU::Tests::afRegisterPairSet, "Set AF Register Pair", "[Reg
 METHOD_AS_TEST_CASE(CPU::Tests::cpuStateGet, "Get CPU State", "[State]");
 METHOD_AS_TEST_CASE(CPU::Tests::cpuStateSet, "Set CPU State", "[State]");
 METHOD_AS_TEST_CASE(CPU::Tests::defaultState, "Check default CPU State", "[State]");
+METHOD_AS_TEST_CASE(CPU::Tests::flagComp, "Flag Composition", "[Flags]");
+METHOD_AS_TEST_CASE(CPU::Tests::flagDecomp, "Flag Decomposition", "[Flags]");
 
 }

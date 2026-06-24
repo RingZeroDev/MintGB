@@ -3,14 +3,18 @@
 namespace MintGB {
 
 CPU::State CPU::state() const {
-    return CPU::State {
+    return CPU::State{
         .af = af(),
         .bc = bc(),
         .de = de(),
         .hl = hl(),
 
         .pc = pc,
-        .sp = sp
+        .sp = sp,
+
+        .ime = ime,
+        .ei = ei,
+        .halted = halted
     };
 }
 
@@ -22,6 +26,10 @@ void CPU::state(CPU::State cpuState) {
 
     pc = cpuState.pc;
     sp = cpuState.sp;
+
+    ime = cpuState.ime;
+    ei = cpuState.ei;
+    halted = cpuState.halted;
 }
 
 }

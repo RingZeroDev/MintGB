@@ -30,6 +30,13 @@ class CPU {
 
     struct State;
 
+    enum class Flags : uint8_t {
+        Zero = 7,
+        Subtract = 6,
+        HalfCarry = 5,
+        Carry = 4
+    };
+
     /**
      * @brief Retrieve the state of the CPU
      * @headerfile cpu.hpp
@@ -51,6 +58,10 @@ class CPU {
     uint16_t pc = 0x0000;
     uint16_t sp = 0x0000;
 
+    bool ime;
+    bool ei;
+    bool halted;
+
     uint16_t af() const { return BitUtils::concat(a, f); }
     void af(uint16_t value) { a = BitUtils::highByte(value); f = BitUtils::lowByte(value & BitUtils::highNibbleMask); }
 
@@ -62,6 +73,18 @@ class CPU {
 
     uint16_t hl() const { return BitUtils::concat(h, l); }
     void hl(uint16_t value) { h = BitUtils::highByte(value); l = BitUtils::lowByte(value); }
+
+    bool zf() const { return BitUtils::test(f, static_cast<unsigned char>(Flags::Zero)); }
+    void zf(bool cond) { f = BitUtils::set(f, static_cast<unsigned char>(Flags::Zero), cond); }
+
+    bool nf() const { return BitUtils::test(f, static_cast<unsigned char>(Flags::Subtract)); }
+    void nf(bool cond) { f = BitUtils::set(f, static_cast<unsigned char>(Flags::Subtract), cond); }
+
+    bool hf() const { return BitUtils::test(f, static_cast<unsigned char>(Flags::HalfCarry)); }
+    void hf(bool cond) { f = BitUtils::set(f, static_cast<unsigned char>(Flags::HalfCarry), cond); }
+
+    bool cf() const { return BitUtils::test(f, static_cast<unsigned char>(Flags::Carry)); }
+    void cf(bool cond) { f = BitUtils::set(f, static_cast<unsigned char>(Flags::Carry), cond); }
 };
 
 /**
@@ -78,6 +101,10 @@ struct CPU::State {
     
     uint16_t pc = 0x0000;
     uint16_t sp = 0x0000;
+
+    bool ime = false;
+    bool ei = false;
+    bool halted = false;
 
     bool operator==(const CPU::State&) const = default;
 };   
