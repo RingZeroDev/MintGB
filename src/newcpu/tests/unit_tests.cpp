@@ -27,6 +27,22 @@ class CPU::Tests {
         REQUIRE(cpu.af() == 0xFFF0);
     }
 
+    void makeRegisterPair() {
+        cpu.b = 0xAB;
+        cpu.c = 0xCD;
+
+        uint16_t value = CPU::pair(cpu.b, cpu.c);
+
+        REQUIRE(value == 0xABCD);
+    }
+
+    void splitRegisterPair() {
+        CPU::split(cpu.b, cpu.c, 0xABCD);
+
+        REQUIRE(cpu.b == 0xAB);
+        REQUIRE(cpu.c == 0xCD);
+    }
+
     void cpuStateGet() {
         cpu.state(CPU::State{
             .af = 0xABCD,
@@ -123,6 +139,8 @@ class CPU::Tests {
 
 METHOD_AS_TEST_CASE(CPU::Tests::registerPairComp, "Register Pair Composition", "[RegisterPair]");
 METHOD_AS_TEST_CASE(CPU::Tests::registerPairDecomp, "Register Pair Decomp", "[RegisterPair]");
+METHOD_AS_TEST_CASE(CPU::Tests::makeRegisterPair, "Make Register Pair", "[RegisterPair]");
+METHOD_AS_TEST_CASE(CPU::Tests::splitRegisterPair, "Split Register Pair", "[RegisterPair]");
 METHOD_AS_TEST_CASE(CPU::Tests::afRegisterPairSet, "Set AF Register Pair", "[RegisterPair]");
 METHOD_AS_TEST_CASE(CPU::Tests::cpuStateGet, "Get CPU State", "[State]");
 METHOD_AS_TEST_CASE(CPU::Tests::cpuStateSet, "Set CPU State", "[State]");

@@ -1,0 +1,4 @@
+{% set opcode = opcodes["0x%02x" | format(i)] %}
+{% if opcode and i != 0xCB %}
+    {{opcode["mnemonic"]}}{{getOperand(opcode, 1)}}{{getOperand(opcode, 2)}} = {{"0x%02X" | format(i)}},
+{% endif %}

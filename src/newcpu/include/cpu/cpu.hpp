@@ -2,6 +2,8 @@
 #define CPU_HPP
 
 #include "bit_utils.hpp"
+#include "instruction.hpp"
+#include "cb_instruction.hpp"
 
 #include <cstdint>
 
@@ -30,15 +32,8 @@ class CPU {
 
     struct State;
 
-    enum class Flags : uint8_t {
-        Zero = 7,
-        Subtract = 6,
-        HalfCarry = 5,
-        Carry = 4
-    };
-
     /**
-     * @brief Retrieve the state of the CPU
+     * @brief Retrieves the state of the CPU
      * @headerfile cpu.hpp
      */
     State state() const;
@@ -50,6 +45,13 @@ class CPU {
     void state(State cpuState);
 
     private:
+    enum class Flags : uint8_t {
+        Zero = 7,
+        Subtract = 6,
+        HalfCarry = 5,
+        Carry = 4
+    };
+
     uint8_t a = 0x00, f = 0x00;
     uint8_t b = 0x00, c = 0x00;
     uint8_t d = 0x00, e = 0x00;
@@ -61,6 +63,15 @@ class CPU {
     bool ime;
     bool ei;
     bool halted;
+
+    static uint16_t pair(uint8_t high, uint8_t low) {
+        return BitUtils::concat(high, low);
+    }
+
+    static void split(uint8_t& high, uint8_t& low, uint16_t value) {
+        high = BitUtils::highByte(value);
+        low = BitUtils::lowByte(value);
+    }
 
     uint16_t af() const { return BitUtils::concat(a, f); }
     void af(uint16_t value) { a = BitUtils::highByte(value); f = BitUtils::lowByte(value & BitUtils::highNibbleMask); }
