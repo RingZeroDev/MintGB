@@ -134,7 +134,8 @@ class CPU::Tests {
     }
 
     private:
-    CPU cpu {};
+    MMU mmu{};
+    CPU cpu{&mmu};
 };
 
 METHOD_AS_TEST_CASE(CPU::Tests::registerPairComp, "Register Pair Composition", "[RegisterPair]");

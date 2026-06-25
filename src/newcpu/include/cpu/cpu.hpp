@@ -5,6 +5,12 @@
 #include "instruction.hpp"
 #include "cb_instruction.hpp"
 
+#ifdef TEST_CPU
+#include "mmu/test_mmu.hpp"
+#else
+#include "mmu/mmu.hpp"
+#endif
+
 #include <cstdint>
 
 namespace MintGB {
@@ -13,19 +19,16 @@ namespace MintGB {
  * @brief An SM83 CPU emulator core.
  * 
  * CPU executes gameboy instructions. 
- * 
- * @headerfile cpu.hpp
  */
 class CPU {
     public:
-    explicit CPU() = default;
+    explicit CPU(MMU* mmu) : mmu(mmu) {}
 
     /**
      * @brief A class meant to be defined by CPU Testing programs. 
      * 
      * CPU::Tests is a friend of CPU, giving full access to its members and member functions.
      * CPU::Tests does not have a default implementation. The class itself must be defined. 
-     * @headerfile cpu.hpp
      */
     class Tests;
     friend class Tests;
@@ -34,13 +37,11 @@ class CPU {
 
     /**
      * @brief Retrieves the state of the CPU
-     * @headerfile cpu.hpp
      */
     State state() const;
 
     /**
      * @brief Set the state of the CPU
-     * @headerfile cpu.hpp
      */
     void state(State cpuState);
 
@@ -52,6 +53,8 @@ class CPU {
         Carry = 4
     };
 
+    MMU* mmu = nullptr;
+
     uint8_t a = 0x00, f = 0x00;
     uint8_t b = 0x00, c = 0x00;
     uint8_t d = 0x00, e = 0x00;
@@ -60,9 +63,13 @@ class CPU {
     uint16_t pc = 0x0000;
     uint16_t sp = 0x0000;
 
-    bool ime;
-    bool ei;
-    bool halted;
+    bool ime = false;
+    bool ei = false;
+    bool halted = false;
+
+    uint8_t readByte(uint16_t addr) const;
+    void writeByte(uint16_t addr, uint8_t value) const;
+    void waitCycle(uint8_t amount) const;
 
     static uint16_t pair(uint8_t high, uint8_t low) {
         return BitUtils::concat(high, low);
@@ -102,7 +109,6 @@ class CPU {
  * @brief A struct meant to represent the state of the CPU
  * 
  * CPU::State contains a copy of the state of the CPU registers and flags.
- * @headerfile cpu.hpp
  */
 struct CPU::State {
     uint16_t af = 0x0000;
