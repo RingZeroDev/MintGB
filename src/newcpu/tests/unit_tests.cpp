@@ -27,22 +27,6 @@ class CPU::Tests {
         REQUIRE(cpu.af() == 0xFFF0);
     }
 
-    void makeRegisterPair() {
-        cpu.b = 0xAB;
-        cpu.c = 0xCD;
-
-        uint16_t value = CPU::pair(cpu.b, cpu.c);
-
-        REQUIRE(value == 0xABCD);
-    }
-
-    void splitRegisterPair() {
-        CPU::split(cpu.b, cpu.c, 0xABCD);
-
-        REQUIRE(cpu.b == 0xAB);
-        REQUIRE(cpu.c == 0xCD);
-    }
-
     void cpuStateGet() {
         cpu.state(CPU::State{
             .af = 0xABCD,
@@ -333,6 +317,97 @@ class CPU::Tests {
         REQUIRE(cpu.hl() == 0xABCC);
     }
 
+    void instructionGroupAdc() {
+        cpu.a = 0xFF;
+        cpu.b = 0x00;
+        cpu.cf(true);
+
+        cpu.execute(Instruction::ADC_A_B);
+
+        REQUIRE(cpu.a == 0x00);
+        REQUIRE(cpu.zf());
+        REQUIRE_FALSE(cpu.nf());
+        REQUIRE(cpu.hf());
+        REQUIRE(cpu.cf());
+    }
+
+    void instructionGroupAdd() {
+        cpu.a = 0xFF;
+        cpu.b = 0x01;
+
+        cpu.execute(Instruction::ADD_A_B);
+
+        REQUIRE(cpu.a == 0x00);
+        REQUIRE(cpu.zf());
+        REQUIRE_FALSE(cpu.nf());
+        REQUIRE(cpu.hf());
+        REQUIRE(cpu.cf());
+    }
+
+    void instructionGroupCp() {
+        cpu.a = 0x00;
+        cpu.b = 0x01;
+
+        cpu.execute(Instruction::CP_B);
+
+        REQUIRE(cpu.a == 0x00);
+        REQUIRE_FALSE(cpu.zf());
+        REQUIRE(cpu.nf());
+        REQUIRE(cpu.hf());
+        REQUIRE(cpu.cf());
+    }
+
+    void instructionGroupDec() {
+        cpu.a = 0x10;
+
+        cpu.execute(Instruction::DEC_A);
+
+        REQUIRE(cpu.a == 0x0F);
+        REQUIRE_FALSE(cpu.zf());
+        REQUIRE(cpu.nf());
+        REQUIRE(cpu.hf());
+        REQUIRE_FALSE(cpu.cf());
+    }
+
+    void instructionGroupInc() {
+        cpu.a = 0x0F;
+
+        cpu.execute(Instruction::INC_A);
+
+        REQUIRE(cpu.a == 0x10);
+        REQUIRE_FALSE(cpu.zf());
+        REQUIRE_FALSE(cpu.nf());
+        REQUIRE(cpu.hf());
+        REQUIRE_FALSE(cpu.cf());
+    }
+
+    void instructionGroupSbc() {
+        cpu.a = 0x00;
+        cpu.b = 0x00;
+        cpu.cf(1);
+
+        cpu.execute(Instruction::SBC_A_B);
+
+        REQUIRE(cpu.a == 0xFF);
+        REQUIRE_FALSE(cpu.zf());
+        REQUIRE(cpu.nf());
+        REQUIRE(cpu.hf());
+        REQUIRE(cpu.cf());
+    }
+
+    void instructionGroupSub() {
+        cpu.a = 0x00;
+        cpu.b = 0x01;
+
+        cpu.execute(Instruction::SUB_B);
+
+        REQUIRE(cpu.a == 0xFF);
+        REQUIRE_FALSE(cpu.zf());
+        REQUIRE(cpu.nf());
+        REQUIRE(cpu.hf());
+        REQUIRE(cpu.cf());
+    }
+
     private:
     MMU mmu{};
     CPU cpu{&mmu};
@@ -340,8 +415,6 @@ class CPU::Tests {
 
 METHOD_AS_TEST_CASE(CPU::Tests::registerPairComp, "Register Pair Composition", "[RegisterPair]");
 METHOD_AS_TEST_CASE(CPU::Tests::registerPairDecomp, "Register Pair Decomp", "[RegisterPair]");
-METHOD_AS_TEST_CASE(CPU::Tests::makeRegisterPair, "Make Register Pair", "[RegisterPair]");
-METHOD_AS_TEST_CASE(CPU::Tests::splitRegisterPair, "Split Register Pair", "[RegisterPair]");
 METHOD_AS_TEST_CASE(CPU::Tests::afRegisterPairSet, "Set AF Register Pair", "[RegisterPair]");
 METHOD_AS_TEST_CASE(CPU::Tests::cpuStateGet, "Get CPU State", "[State]");
 METHOD_AS_TEST_CASE(CPU::Tests::cpuStateSet, "Set CPU State", "[State]");
@@ -370,4 +443,11 @@ METHOD_AS_TEST_CASE(CPU::Tests::instruction_ld_ind_hli_a, "Instruction: ld [hl+]
 METHOD_AS_TEST_CASE(CPU::Tests::instruction_ld_ind_hld_a, "Instruction: ld [hl-], a", "[Load][Instruction]");
 METHOD_AS_TEST_CASE(CPU::Tests::instruction_ld_a_ind_hli, "Instruction: ld a, [hl+]", "[Load][Instruction]");
 METHOD_AS_TEST_CASE(CPU::Tests::instruction_ld_a_ind_hld, "Instruction: ld a, [hl-]", "[Load][Instruction]");
+METHOD_AS_TEST_CASE(CPU::Tests::instructionGroupAdc, "Instruction Group: adc", "[ALU][Instruction]");
+METHOD_AS_TEST_CASE(CPU::Tests::instructionGroupAdd, "Instruction Group: add", "[ALU][Instruction]");
+METHOD_AS_TEST_CASE(CPU::Tests::instructionGroupCp, "Instruction Group: cp", "[ALU][Instruction]");
+METHOD_AS_TEST_CASE(CPU::Tests::instructionGroupDec, "Instruction Group: dec", "[ALU][Instruction]");
+METHOD_AS_TEST_CASE(CPU::Tests::instructionGroupInc, "Instruction Group: inc", "[ALU][Instruction]");
+METHOD_AS_TEST_CASE(CPU::Tests::instructionGroupSbc, "Instruction Group: sbc", "[ALU][Instruction]");
+METHOD_AS_TEST_CASE(CPU::Tests::instructionGroupSub, "Instruction Group: sub", "[ALU][Instruction]");
 }

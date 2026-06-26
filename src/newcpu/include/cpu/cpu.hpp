@@ -67,15 +67,6 @@ class CPU {
     bool ei = false;
     bool halted = false;
 
-    static uint16_t pair(uint8_t high, uint8_t low) {
-        return BitUtils::concat(high, low);
-    }
-
-    static void split(uint8_t& high, uint8_t& low, uint16_t value) {
-        high = BitUtils::highByte(value);
-        low = BitUtils::lowByte(value);
-    }
-
     uint16_t af() const { return BitUtils::concat(a, f); }
     void af(uint16_t value) { a = BitUtils::highByte(value); f = BitUtils::lowByte(value & BitUtils::highNibbleMask); }
 
@@ -110,26 +101,27 @@ class CPU {
 
     void execute(Instruction ins);
 
-    // Load instructions
+    bool arithHalfCarry(uint8_t value, uint16_t res) const;
+    bool unaryHalfCarry(uint8_t reg, uint8_t compare) const;
 
-    void ld_r8_r8(uint8_t &dst, uint8_t src);
-    void ld_r8_n8(uint8_t& dst);
-    void ld_r16_n16(uint8_t &high, uint8_t &low);
-    void ld_ind_hl_r8(uint8_t src);
-    void ld_ind_hl_n8();
-    void ld_r8_ind_hl(uint8_t &dst);
-    void ld_ind_r16_a(uint16_t addr);
-    void ld_ind_a16_a();
-    void ldh_ind_a16_a();
-    void ldh_ind_c_a();
-    void ld_a_ind_r16(uint16_t addr);
-    void ld_a_ind_a16();
-    void ldh_a_ind_a16();
-    void ldh_a_ind_c();
-    void ld_ind_hli_a();
-    void ld_ind_hld_a();
-    void ld_a_ind_hli();
-    void ld_a_ind_hld();
+    void arithFlags(uint8_t value, uint16_t res, bool subtract);
+    void unaryFlags(uint8_t reg, uint8_t res, uint8_t compare, bool subtract);
+    void logicFlags(uint8_t res, bool halfCarry);
+
+    void adc(uint8_t value);
+    void add(uint8_t value);
+    void cp(uint8_t value);
+    void dec(uint8_t& reg);
+    void inc(uint8_t& reg);
+    void sbc(uint8_t value);
+    void sub(uint8_t value);
+    void and_(uint8_t value);
+    void or_(uint8_t value);
+    void xor_(uint8_t value);
+    void daa();
+    void cpl();
+    void ccf();
+    void scf();
 };
 
 /**

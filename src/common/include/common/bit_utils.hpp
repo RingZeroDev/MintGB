@@ -9,6 +9,10 @@
 
 namespace BitUtils { 
 
+inline constexpr uint8_t maxNibble = 0x0F;
+inline constexpr uint8_t maxByte = 0xFF;
+inline constexpr uint16_t maxWord = 0xFFFF;
+
 template<std::integral T>
 constexpr T set(T value, unsigned char bit) noexcept {
     assert(sizeof(T) * CHAR_BIT > bit);
