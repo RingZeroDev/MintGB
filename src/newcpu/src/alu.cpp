@@ -26,6 +26,23 @@ void CPU::add(uint8_t value) {
     a = res;
 }
 
+inline bool CPU::arithHalfCarry(uint16_t value, uint32_t res) const {
+    constexpr uint16_t halfCarryCompare = 0x1000;
+    return (hl() ^ value ^ res) & halfCarryCompare;
+}
+
+inline void CPU::arithFlags(uint16_t value, uint32_t res) {
+    nf(false);
+    hf(arithHalfCarry(value, res));
+    cf(res > BitUtils::maxWord);
+}
+
+void CPU::add(uint16_t value) {
+    uint32_t res = hl() + value;
+    arithFlags(value, res);
+    hl(res);
+}
+
 void CPU::sbc(uint8_t value) {
     uint16_t res = a - value - cf();
     arithFlags(value, res, true);
@@ -63,6 +80,14 @@ void CPU::inc(uint8_t& reg) {
     uint8_t res = reg + 1;
     unaryFlags(reg, res, BitUtils::maxNibble, false);
     reg = res;
+}
+
+void CPU::inc(uint16_t& value) {
+    value++;
+}
+
+void CPU::dec(uint16_t& value) {
+    value--;
 }
 
 inline void CPU::logicFlags(uint8_t res, bool halfCarry) {

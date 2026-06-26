@@ -102,9 +102,11 @@ class CPU {
     void execute(Instruction ins);
 
     bool arithHalfCarry(uint8_t value, uint16_t res) const;
+    bool arithHalfCarry(uint16_t value, uint32_t res) const;
     bool unaryHalfCarry(uint8_t reg, uint8_t compare) const;
 
     void arithFlags(uint8_t value, uint16_t res, bool subtract);
+    void arithFlags(uint16_t value, uint32_t res);
     void unaryFlags(uint8_t reg, uint8_t res, uint8_t compare, bool subtract);
     void logicFlags(uint8_t res, bool halfCarry);
 
@@ -113,6 +115,8 @@ class CPU {
     void cp(uint8_t value);
     void dec(uint8_t& reg);
     void inc(uint8_t& reg);
+    void inc(uint16_t &value);
+    void dec(uint16_t &value);
     void sbc(uint8_t value);
     void sub(uint8_t value);
     void and_(uint8_t value);
@@ -122,6 +126,8 @@ class CPU {
     void cpl();
     void ccf();
     void scf();
+
+    void add(uint16_t value);
 };
 
 /**

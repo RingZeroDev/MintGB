@@ -260,6 +260,45 @@ void CPU::execute(Instruction ins) {
 
         // sub a, n8
         case Instruction::SUB_Imm8: sub(fetchByte()); break;
+
+        // add hl, r16
+        case Instruction::ADD_HL_BC: add(bc()); break; 
+        case Instruction::ADD_HL_DE: add(de()); break;
+        case Instruction::ADD_HL_HL: add(hl()); break;
+
+        // dec r16
+        case Instruction::DEC_BC: {
+            uint16_t value = bc();
+            dec(value);
+            bc(value);
+        } break;
+        case Instruction::DEC_DE: {
+            uint16_t value = de();
+            dec(value);
+            de(value);
+        } break;
+        case Instruction::DEC_HL: {
+            uint16_t value = hl();
+            dec(value);
+            hl(value);
+        } break;
+
+        // inc r16
+        case Instruction::INC_BC: {
+            uint16_t value = bc();
+            inc(value);
+            bc(value);
+        } break;
+        case Instruction::INC_DE: {
+            uint16_t value = de();
+            inc(value);
+            de(value);
+        } break;
+        case Instruction::INC_HL: {
+            uint16_t value = hl();
+            inc(value);
+            hl(value);
+        } break;
     }
 }
 

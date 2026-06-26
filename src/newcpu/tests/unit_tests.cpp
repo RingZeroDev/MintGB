@@ -408,6 +408,35 @@ class CPU::Tests {
         REQUIRE(cpu.cf());
     }
 
+    void instruction_add_hl_r16() {
+        cpu.hl(0xFFFF);
+        cpu.bc(0x0001);
+        cpu.zf(true);
+
+        cpu.execute(Instruction::ADD_HL_BC);
+
+        REQUIRE(cpu.hl() == 0x0000);
+        REQUIRE_FALSE(cpu.nf());
+        REQUIRE(cpu.hf());
+        REQUIRE(cpu.cf());
+    }
+
+    void instruction_dec_r16() {
+        cpu.bc(0x0000);
+
+        cpu.execute(Instruction::DEC_BC);
+
+        REQUIRE(cpu.bc() == 0xFFFF);
+    }
+
+    void instruction_inc_r16() {
+        cpu.bc(0xFFFF);
+
+        cpu.execute(Instruction::INC_BC);
+
+        REQUIRE(cpu.bc() == 0x0000);
+    }
+
     private:
     MMU mmu{};
     CPU cpu{&mmu};
@@ -450,4 +479,8 @@ METHOD_AS_TEST_CASE(CPU::Tests::instructionGroupDec, "Instruction Group: dec", "
 METHOD_AS_TEST_CASE(CPU::Tests::instructionGroupInc, "Instruction Group: inc", "[ALU][Instruction]");
 METHOD_AS_TEST_CASE(CPU::Tests::instructionGroupSbc, "Instruction Group: sbc", "[ALU][Instruction]");
 METHOD_AS_TEST_CASE(CPU::Tests::instructionGroupSub, "Instruction Group: sub", "[ALU][Instruction]");
+METHOD_AS_TEST_CASE(CPU::Tests::instruction_add_hl_r16, "Instruction: add hl, r16", "[ALU][Instruction]");
+METHOD_AS_TEST_CASE(CPU::Tests::instruction_dec_r16, "Instruction: dec r16", "[ALU][Instruction]");
+METHOD_AS_TEST_CASE(CPU::Tests::instruction_inc_r16, "Instruction: inc r16", "[ALU][Instruction]");
+
 }
