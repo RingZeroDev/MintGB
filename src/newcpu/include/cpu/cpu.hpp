@@ -67,10 +67,6 @@ class CPU {
     bool ei = false;
     bool halted = false;
 
-    uint8_t readByte(uint16_t addr) const;
-    void writeByte(uint16_t addr, uint8_t value) const;
-    void waitCycle(uint8_t amount) const;
-
     static uint16_t pair(uint8_t high, uint8_t low) {
         return BitUtils::concat(high, low);
     }
@@ -103,6 +99,37 @@ class CPU {
 
     bool cf() const { return BitUtils::test(f, static_cast<unsigned char>(Flags::Carry)); }
     void cf(bool cond) { f = BitUtils::set(f, static_cast<unsigned char>(Flags::Carry), cond); }
+
+    uint8_t readByte(uint16_t addr) const;
+    void writeByte(uint16_t addr, uint8_t value) const;
+    void waitCycle(uint8_t amount=1) const;
+    uint16_t readWord(uint16_t addr) const;
+    void writeWord(uint16_t addr, uint16_t value) const;
+    uint8_t fetchByte();
+    uint16_t fetchWord();
+
+    void execute(Instruction ins);
+
+    // Load instructions
+
+    void ld_r8_r8(uint8_t &dst, uint8_t src);
+    void ld_r8_n8(uint8_t& dst);
+    void ld_r16_n16(uint8_t &high, uint8_t &low);
+    void ld_ind_hl_r8(uint8_t src);
+    void ld_ind_hl_n8();
+    void ld_r8_ind_hl(uint8_t &dst);
+    void ld_ind_r16_a(uint16_t addr);
+    void ld_ind_a16_a();
+    void ldh_ind_a16_a();
+    void ldh_ind_c_a();
+    void ld_a_ind_r16(uint16_t addr);
+    void ld_a_ind_a16();
+    void ldh_a_ind_a16();
+    void ldh_a_ind_c();
+    void ld_ind_hli_a();
+    void ld_ind_hld_a();
+    void ld_a_ind_hli();
+    void ld_a_ind_hld();
 };
 
 /**

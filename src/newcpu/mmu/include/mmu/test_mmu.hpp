@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <array>
+#include <queue>
 
 namespace MintGB {
 
@@ -13,6 +14,9 @@ namespace MintGB {
  */
 class MMU {
     public:
+    struct Transaction;
+    enum class TransactionType;
+
     explicit MMU() = default;
 
     /**
@@ -30,9 +34,42 @@ class MMU {
      */
     void waitCycle();
 
+    /**
+     * @brief Retrieves the oldest transaction in a series of transactions and pops it from the queue.
+     */
+    const Transaction& nextTransaction();
+
+    /**
+     * @brief Clears the current transaction history.
+     */
+    void clearTransactions();
+
     private:
+
     static constexpr size_t memorySize = 0x10000;
     std::array<uint8_t, 0x10000> memory{};
+
+    std::queue<Transaction> transactions{};
+};
+
+/**
+ * @brief The type of a bus transaction.
+ */
+enum class MMU::TransactionType {
+    Read,
+    Write,
+    Wait
+};
+
+/**
+ * @brief Describes a bus transaction
+ */
+struct MMU::Transaction {
+    uint16_t addr;
+    uint8_t value;
+    MMU::TransactionType type;
+
+    bool operator==(const Transaction&) const = default;
 };
 
 }
