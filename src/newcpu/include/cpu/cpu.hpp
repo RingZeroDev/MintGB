@@ -93,10 +93,12 @@ class CPU {
 
     uint8_t readByte(uint16_t addr) const;
     void writeByte(uint16_t addr, uint8_t value) const;
-    void waitCycle(uint8_t amount=1) const;
+    void waitCycle() const;
+    void waitCycle(uint8_t amount) const;
     uint16_t readWord(uint16_t addr) const;
     void writeWord(uint16_t addr, uint16_t value) const;
     uint8_t fetchByte();
+    int8_t fetchRelative();
     uint16_t fetchWord();
 
     void execute(Instruction ins);
@@ -104,30 +106,35 @@ class CPU {
     bool arithHalfCarry(uint8_t value, uint16_t res) const;
     bool arithHalfCarry(uint16_t value, uint32_t res) const;
     bool unaryHalfCarry(uint8_t reg, uint8_t compare) const;
+    uint16_t relCarry(int8_t value, uint16_t res) const;
 
     void arithFlags(uint8_t value, uint16_t res, bool subtract);
     void arithFlags(uint16_t value, uint32_t res);
     void unaryFlags(uint8_t reg, uint8_t res, uint8_t compare, bool subtract);
     void logicFlags(uint8_t res, bool halfCarry);
+    void relFlags(int8_t value, uint16_t res);
 
     void adc(uint8_t value);
     void add(uint8_t value);
     void cp(uint8_t value);
     void dec(uint8_t& reg);
     void inc(uint8_t& reg);
-    void inc(uint16_t &value);
-    void dec(uint16_t &value);
     void sbc(uint8_t value);
     void sub(uint8_t value);
     void and_(uint8_t value);
     void or_(uint8_t value);
     void xor_(uint8_t value);
     void daa();
-    void cpl();
-    void ccf();
-    void scf();
+    uint16_t spRel();
 
     void add(uint16_t value);
+
+    uint16_t pop();
+    void push(uint16_t addr);
+    void call(uint16_t addr);
+    void ret();
+    void halt();
+    void stop();
 };
 
 /**

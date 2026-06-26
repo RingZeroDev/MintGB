@@ -1,6 +1,8 @@
 #include "cpu.hpp"
-
 #include "instruction.hpp"
+
+#include <stdexcept>
+#include <format>
 
 namespace MintGB {
 
@@ -268,37 +270,251 @@ void CPU::execute(Instruction ins) {
 
         // dec r16
         case Instruction::DEC_BC: {
-            uint16_t value = bc();
-            dec(value);
-            bc(value);
+            bc(bc() - 1);
+            waitCycle();
         } break;
         case Instruction::DEC_DE: {
-            uint16_t value = de();
-            dec(value);
-            de(value);
+            de(de() - 1);
+            waitCycle();
         } break;
         case Instruction::DEC_HL: {
-            uint16_t value = hl();
-            dec(value);
-            hl(value);
+            hl(hl() - 1);
+            waitCycle();
         } break;
 
         // inc r16
         case Instruction::INC_BC: {
-            uint16_t value = bc();
-            inc(value);
-            bc(value);
+            bc(bc() + 1);
+            waitCycle();
         } break;
         case Instruction::INC_DE: {
-            uint16_t value = de();
-            inc(value);
-            de(value);
+            de(de() + 1);
+            waitCycle();
         } break;
         case Instruction::INC_HL: {
-            uint16_t value = hl();
-            inc(value);
-            hl(value);
+            hl(hl() + 1);
+            waitCycle();
         } break;
+
+        // and a, r8
+        case Instruction::AND_A: and_(a); break; 
+        case Instruction::AND_B: and_(b); break;
+        case Instruction::AND_C: and_(c); break;
+        case Instruction::AND_D: and_(d); break;
+        case Instruction::AND_E: and_(e); break;
+        case Instruction::AND_H: and_(h); break;
+        case Instruction::AND_L: and_(l); break;
+
+        // and a, [hl]
+        case Instruction::AND_IndirectHL: and_(readByte(hl())); break;
+
+        // and a, n8
+        case Instruction::AND_Imm8: and_(fetchByte()); break;
+
+        // cpl
+        case Instruction::CPL: 
+            a = ~a; 
+            nf(true);
+            hf(true); 
+            break;
+        
+        // or a, r8
+        case Instruction::OR_A: or_(a); break; 
+        case Instruction::OR_B: or_(b); break;
+        case Instruction::OR_C: or_(c); break;
+        case Instruction::OR_D: or_(d); break;
+        case Instruction::OR_E: or_(e); break;
+        case Instruction::OR_H: or_(h); break;
+        case Instruction::OR_L: or_(l); break;
+
+        // or a, [hl]
+        case Instruction::OR_IndirectHL: or_(readByte(hl())); break;
+
+        // or a, n8
+        case Instruction::OR_Imm8: or_(fetchByte()); break;
+
+        // xor a, r8
+        case Instruction::XOR_A: xor_(a); break; 
+        case Instruction::XOR_B: xor_(b); break;
+        case Instruction::XOR_C: xor_(c); break;
+        case Instruction::XOR_D: xor_(d); break;
+        case Instruction::XOR_E: xor_(e); break;
+        case Instruction::XOR_H: xor_(h); break;
+        case Instruction::XOR_L: xor_(l); break;
+
+        // or a, [hl]
+        case Instruction::XOR_IndirectHL: xor_(readByte(hl())); break;
+
+        // or a, n8
+        case Instruction::XOR_Imm8: xor_(fetchByte()); break;
+
+        // call n16
+        case Instruction::CALL_Addr16: call(fetchWord()); break;
+
+        // call cc, n16
+        case Instruction::CALL_NZ_Addr16: {
+            uint16_t addr = fetchWord();
+            if (!zf()) call(addr);
+        } break;
+        case Instruction::CALL_Z_Addr16: {
+            uint16_t addr = fetchWord();
+            if (zf()) call(addr);
+        } break;
+        case Instruction::CALL_NC_Addr16: {
+            uint16_t addr = fetchWord();
+            if (!cf()) call(addr);
+        } break;
+        case Instruction::CALL_C_Addr16: {
+            uint16_t addr = fetchWord();
+            if (!cf()) call(addr);
+        }
+        
+        // jp hl
+        case Instruction::JP_IndirectHL: pc = hl(); break;
+
+        // jp n16
+        case Instruction::JP_Addr16: pc = fetchWord(); break;
+        
+        // jp cc, n16
+        case Instruction::JP_NZ_Addr16: {
+            uint16_t addr = fetchWord();
+            if (!zf()) { pc = addr; waitCycle(); }
+        } break;
+        case Instruction::JP_Z_Addr16: {
+            uint16_t addr = fetchWord();
+            if (zf()) { pc = addr; waitCycle(); }
+        } break;
+        case Instruction::JP_NC_Addr16: {
+            uint16_t addr = fetchWord();
+            if (!cf()) { pc = addr; waitCycle(); }
+        } break;
+        case Instruction::JP_C_Addr16: {
+            uint16_t addr = fetchWord();
+            if (cf()) { pc = addr; waitCycle(); }
+        } break;
+
+        // jr n16
+        case Instruction::JR_Rel8: 
+            pc += fetchRelative(); 
+            waitCycle();
+            break;
+
+        // jr cc, n16
+        case Instruction::JR_NZ_Rel8: {
+            int8_t offset = fetchRelative();
+            if (!zf()) { pc += offset; waitCycle(); }
+        } break;
+        case Instruction::JR_Z_Rel8: {
+            int8_t offset = fetchRelative();
+            if (zf()) { pc += offset; waitCycle(); }
+        } break;
+        case Instruction::JR_NC_Rel8: {
+            int8_t offset = fetchRelative();
+            if (!cf()) { pc += offset; waitCycle(); }
+        } break;
+        case Instruction::JR_C_Rel8: {
+            int8_t offset = fetchRelative();
+            if (cf()) { pc += offset; waitCycle(); }
+        } break;
+
+        // ret
+        case Instruction::RET: ret(); break;
+
+        // ret cc
+        case Instruction::RET_NZ: {
+            waitCycle();
+            if (!zf()) ret(); 
+        } break;
+        case Instruction::RET_Z: {
+            waitCycle();
+            if (zf()) ret(); 
+        } break;
+        case Instruction::RET_NC: {
+            waitCycle();
+            if (!cf()) ret(); 
+        } break;
+        case Instruction::RET_C: {
+            waitCycle();
+            if (cf()) ret(); 
+        } break;
+
+        // reti
+        case Instruction::RETI:
+            ret();
+            ime = true;
+            break;
+
+        // rst
+        case Instruction::RST_00H: call(0x00); break;
+        case Instruction::RST_08H: call(0x08); break;
+        case Instruction::RST_10H: call(0x10); break;
+        case Instruction::RST_18H: call(0x18); break;
+        case Instruction::RST_20H: call(0x20); break;
+        case Instruction::RST_28H: call(0x28); break;
+        case Instruction::RST_30H: call(0x30); break;
+        case Instruction::RST_38H: call(0x38); break;
+
+        // ccf
+        case Instruction::CCF:
+            cf(!cf());
+            hf(false);
+            nf(false);
+            break;
+
+        // scf
+        case Instruction::SCF:
+            cf(true);
+            hf(false);
+            nf(false);
+            break;
+
+        // add hl, sp
+        case Instruction::ADD_HL_SP: add(sp); break;
+
+        // add sp, e8
+        case Instruction::ADD_SP_Rel8: sp = spRel(); break;
+
+        // dec sp
+        case Instruction::DEC_SP:
+            sp--;
+            waitCycle();
+            break;
+
+        // inc sp
+        case Instruction::INC_SP:
+            sp++;
+            waitCycle();
+            break;
+
+        // ld sp, n16
+        case Instruction::LD_SP_Imm16: sp = fetchWord(); break;
+
+        // ld [n16], sp
+        case Instruction::LD_IndirectAddr16_SP: writeWord(fetchWord(), sp); break;
+
+        // ld hl, sp+e8
+        case Instruction::LD_HL_SPRel8: hl(spRel()); break;
+
+        // di
+        case Instruction::DI: ime = false; break;
+
+        // ei
+        case Instruction::EI: ei = true; break;
+
+        // halt
+        case Instruction::HALT: halt(); break;
+
+        // daa
+        case Instruction::DAA: daa(); break;
+
+        // nop
+        case Instruction::NOP: break;
+
+        // stop
+        case Instruction::STOP_0: stop(); break;
+
+        default:
+            throw std::runtime_error(std::format("Illegal opcode reached: {:02X}", static_cast<uint8_t>(ins)));
     }
 }
 

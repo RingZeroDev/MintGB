@@ -26,6 +26,27 @@ void CPU::add(uint8_t value) {
     a = res;
 }
 
+inline uint16_t CPU::relCarry(int8_t value, uint16_t res) const {
+    return sp ^ static_cast<uint16_t>(value) ^ res;
+}
+
+inline void CPU::relFlags(int8_t value, uint16_t res) {
+    uint16_t carry = relCarry(value, res);
+    zf(false);
+    nf(false);
+    hf(BitUtils::test(carry, 4));
+    cf(BitUtils::test(carry, 8));
+}
+
+uint16_t CPU::spRel() {
+    int8_t value = fetchRelative();
+    uint16_t res = sp + value;
+    relFlags(value, res);
+    waitCycle(2);
+    return res;
+}
+
+
 inline bool CPU::arithHalfCarry(uint16_t value, uint32_t res) const {
     constexpr uint16_t halfCarryCompare = 0x1000;
     return (hl() ^ value ^ res) & halfCarryCompare;
@@ -82,14 +103,6 @@ void CPU::inc(uint8_t& reg) {
     reg = res;
 }
 
-void CPU::inc(uint16_t& value) {
-    value++;
-}
-
-void CPU::dec(uint16_t& value) {
-    value--;
-}
-
 inline void CPU::logicFlags(uint8_t res, bool halfCarry) {
     zf(res == 0);
     nf(false);
@@ -144,24 +157,6 @@ void CPU::daa() {
     zf(res == 0);
     hf(false);
     a = res;
-}
-
-void CPU::cpl() {
-    a = ~a; 
-    nf(true);
-    hf(true);
-}
-
-void CPU::ccf() {
-    cf(!cf());
-    hf(false);
-    nf(false);
-}
-
-void CPU::scf() {
-    cf(true);
-    hf(false);
-    nf(false);
 }
 
 }

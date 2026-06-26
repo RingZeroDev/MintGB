@@ -6,7 +6,9 @@ add_subdirectory(mmu)
 
 add_library(CPU STATIC
     src/cpu.cpp
+    src/lsm.cpp
     src/alu.cpp
+    src/control.cpp
     src/execute.cpp
 )
 
@@ -25,7 +27,9 @@ target_link_libraries(CPU
 
 add_library(TestCPU STATIC
     src/cpu.cpp
+    src/lsm.cpp
     src/alu.cpp
+    src/control.cpp
     src/execute.cpp
 )
 
