@@ -1,5 +1,6 @@
 from jinja2 import Environment, FileSystemLoader
 import json
+import jsonpatch
 
 env = Environment(loader = FileSystemLoader("templates"), trim_blocks=True, lstrip_blocks=True)
 template = env.get_template("table.cpp.j2")
@@ -54,9 +55,15 @@ state = {
     "getOperand": getOperand
 }
 
+patch = {}
+with open("opcodes_patch.json") as opcodesPatch:
+    patchStr = opcodesPatch.read()
+    patch = jsonpatch.JsonPatch.from_string(patchStr)
+
 opcodes = {}
 with open("game-boy-opcodes/opcodes.json") as opcodesFile:
     opcodes = json.load(opcodesFile)
+    opcodes = patch.apply(opcodes);
 
 def outputTable(path, name, prefix, getterName):
     with open(path, "w") as outputFile:

@@ -1,0 +1,142 @@
+[
+    {"op": "remove", "path": "/unprefixed/0x10/operand1"},
+
+    {"op": "replace", "path": "/unprefixed/0xe2/mnemonic", "value": "LDH"},
+
+    {"op": "replace", "path": "/unprefixed/0xf2/mnemonic", "value": "LDH"},
+
+    {"op": "add", "path": "/unprefixed/0x90/operand2", "value": "B"},
+    {"op": "replace", "path": "/unprefixed/0x90/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0x91/operand2", "value": "C"},
+    {"op": "replace", "path": "/unprefixed/0x91/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0x92/operand2", "value": "D"},
+    {"op": "replace", "path": "/unprefixed/0x92/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0x93/operand2", "value": "E"},
+    {"op": "replace", "path": "/unprefixed/0x93/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0x94/operand2", "value": "H"},
+    {"op": "replace", "path": "/unprefixed/0x94/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0x95/operand2", "value": "L"},
+    {"op": "replace", "path": "/unprefixed/0x95/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0x96/operand2", "value": "(HL)"},
+    {"op": "replace", "path": "/unprefixed/0x96/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0x97/operand2", "value": "A"},
+    {"op": "replace", "path": "/unprefixed/0x97/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xa0/operand2", "value": "B"},
+    {"op": "replace", "path": "/unprefixed/0xa0/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xa1/operand2", "value": "C"},
+    {"op": "replace", "path": "/unprefixed/0xa1/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xa2/operand2", "value": "D"},
+    {"op": "replace", "path": "/unprefixed/0xa2/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xa3/operand2", "value": "E"},
+    {"op": "replace", "path": "/unprefixed/0xa3/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xa4/operand2", "value": "H"},
+    {"op": "replace", "path": "/unprefixed/0xa4/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xa5/operand2", "value": "L"},
+    {"op": "replace", "path": "/unprefixed/0xa5/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xa6/operand2", "value": "(HL)"},
+    {"op": "replace", "path": "/unprefixed/0xa6/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xa7/operand2", "value": "A"},
+    {"op": "replace", "path": "/unprefixed/0xa7/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xa8/operand2", "value": "B"},
+    {"op": "replace", "path": "/unprefixed/0xa8/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xa9/operand2", "value": "C"},
+    {"op": "replace", "path": "/unprefixed/0xa9/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xaa/operand2", "value": "D"},
+    {"op": "replace", "path": "/unprefixed/0xaa/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xab/operand2", "value": "E"},
+    {"op": "replace", "path": "/unprefixed/0xab/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xac/operand2", "value": "H"},
+    {"op": "replace", "path": "/unprefixed/0xac/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xad/operand2", "value": "L"},
+    {"op": "replace", "path": "/unprefixed/0xad/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xae/operand2", "value": "(HL)"},
+    {"op": "replace", "path": "/unprefixed/0xae/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xaf/operand2", "value": "A"},
+    {"op": "replace", "path": "/unprefixed/0xaf/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xb0/operand2", "value": "B"},
+    {"op": "replace", "path": "/unprefixed/0xb0/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xb1/operand2", "value": "C"},
+    {"op": "replace", "path": "/unprefixed/0xb1/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xb2/operand2", "value": "D"},
+    {"op": "replace", "path": "/unprefixed/0xb2/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xb3/operand2", "value": "E"},
+    {"op": "replace", "path": "/unprefixed/0xb3/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xb4/operand2", "value": "H"},
+    {"op": "replace", "path": "/unprefixed/0xb4/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xb5/operand2", "value": "L"},
+    {"op": "replace", "path": "/unprefixed/0xb5/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xb6/operand2", "value": "(HL)"},
+    {"op": "replace", "path": "/unprefixed/0xb6/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xb7/operand2", "value": "A"},
+    {"op": "replace", "path": "/unprefixed/0xb7/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xb8/operand2", "value": "B"},
+    {"op": "replace", "path": "/unprefixed/0xb8/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xb9/operand2", "value": "C"},
+    {"op": "replace", "path": "/unprefixed/0xb9/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xba/operand2", "value": "D"},
+    {"op": "replace", "path": "/unprefixed/0xba/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xbb/operand2", "value": "E"},
+    {"op": "replace", "path": "/unprefixed/0xbb/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xbc/operand2", "value": "H"},
+    {"op": "replace", "path": "/unprefixed/0xbc/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xbd/operand2", "value": "L"},
+    {"op": "replace", "path": "/unprefixed/0xbd/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xbe/operand2", "value": "(HL)"},
+    {"op": "replace", "path": "/unprefixed/0xbe/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xbf/operand2", "value": "A"},
+    {"op": "replace", "path": "/unprefixed/0xbf/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xd6/operand2", "value": "d8"},
+    {"op": "replace", "path": "/unprefixed/0xd6/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xe6/operand2", "value": "d8"},
+    {"op": "replace", "path": "/unprefixed/0xe6/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xf6/operand2", "value": "d8"},
+    {"op": "replace", "path": "/unprefixed/0xf6/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xee/operand2", "value": "d8"},
+    {"op": "replace", "path": "/unprefixed/0xee/operand1", "value": "A"},
+
+    {"op": "add", "path": "/unprefixed/0xfe/operand2", "value": "d8"},
+    {"op": "replace", "path": "/unprefixed/0xfe/operand1", "value": "A"}
+]

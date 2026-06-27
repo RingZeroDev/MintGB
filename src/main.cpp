@@ -144,7 +144,27 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     static MemoryEditor memEdit;
     {
         ImGui::Begin("Memory");
-        memEdit.DrawContents(state->mmu.wram.data(), 0x2000, 0xC000);
+
+        if (ImGui::BeginTabBar("Memory", ImGuiTabBarFlags_Reorderable)) {
+            if (ImGui::BeginTabItem("VRAM")) {
+                memEdit.DrawContents(state->mmu.vram.data(), 0x2000, 0x8000);
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("WRAM")) {
+                memEdit.DrawContents(state->mmu.wram.data(), 0x2000, 0xC000);
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("OAM")) {
+                memEdit.DrawContents(state->mmu.oam.data(), 160, 0xFE00);
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("HRAM")) {
+                memEdit.DrawContents(state->mmu.hram.data(), 127, 0xFF80);
+                ImGui::EndTabItem();
+            }
+        }
+
+        ImGui::EndTabBar();
         ImGui::End();
     }
 
