@@ -8,8 +8,10 @@ add_library(CPU STATIC
     src/cpu.cpp
     src/lsm.cpp
     src/alu.cpp
+    src/rsb.cpp
     src/control.cpp
     src/execute.cpp
+    src/execute_cb.cpp
 )
 
 target_include_directories(CPU
@@ -29,8 +31,10 @@ add_library(TestCPU STATIC
     src/cpu.cpp
     src/lsm.cpp
     src/alu.cpp
+    src/rsb.cpp
     src/control.cpp
     src/execute.cpp
+    src/execute_cb.cpp
 )
 
 target_include_directories(TestCPU

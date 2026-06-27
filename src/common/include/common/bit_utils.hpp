@@ -67,6 +67,21 @@ constexpr inline uint16_t concat(uint8_t high, uint8_t low) noexcept {
     return (static_cast<uint16_t>(high) << highByteShift) | low;
 }
 
+constexpr inline uint8_t concatByte(uint8_t high, uint8_t low) noexcept {
+    return (high << highNibbleShift) | low;
+}
+
+template<std::integral T>
+constexpr bool msb(T value) noexcept {
+    constexpr unsigned int bits = sizeof(T) * CHAR_BIT;
+    return value >> (bits - 1);
+}
+
+template<std::integral T>
+constexpr bool lsb(T value) noexcept {
+    return value & 1;
+}
+
 }
 
 #endif

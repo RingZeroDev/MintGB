@@ -215,6 +215,7 @@ enum class CBInstruction : uint8_t {
     SET_1_B = 0xC8,
     SET_1_C = 0xC9,
     SET_1_D = 0xCA,
+    SET_1_E = 0xCB,
     SET_1_H = 0xCC,
     SET_1_L = 0xCD,
     SET_1_IndirectHL = 0xCE,

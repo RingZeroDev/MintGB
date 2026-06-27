@@ -91,6 +91,11 @@ class CPU {
     bool cf() const { return BitUtils::test(f, static_cast<unsigned char>(Flags::Carry)); }
     void cf(bool cond) { f = BitUtils::set(f, static_cast<unsigned char>(Flags::Carry), cond); }
 
+    void execute(Instruction ins);
+    void executeCB(CBInstruction ins);
+
+    // Load, Store, Move
+
     uint8_t readByte(uint16_t addr) const;
     void writeByte(uint16_t addr, uint8_t value) const;
     void waitCycle() const;
@@ -101,7 +106,10 @@ class CPU {
     int8_t fetchRelative();
     uint16_t fetchWord();
 
-    void execute(Instruction ins);
+    uint16_t pop();
+    void push(uint16_t addr);
+
+    // Arithmetic and Logic
 
     bool arithHalfCarry(uint8_t value, uint16_t res) const;
     bool arithHalfCarry(uint16_t value, uint32_t res) const;
@@ -125,12 +133,32 @@ class CPU {
     void or_(uint8_t value);
     void xor_(uint8_t value);
     void daa();
+    void add(uint16_t value);
     uint16_t spRel();
 
-    void add(uint16_t value);
+    // Rotate, Shift, Bit
 
-    uint16_t pop();
-    void push(uint16_t addr);
+    void shiftFlags(uint8_t sb, uint8_t value);
+    void accShiftFlags(uint8_t sb);
+
+    void rl(uint8_t& reg);
+    void rla();
+    void rlc(uint8_t& reg);
+    void rlca();
+    void rr(uint8_t& reg);
+    void rra();
+    void rrc(uint8_t& reg);
+    void rrca();
+    void sla(uint8_t& reg);
+    void sra(uint8_t& reg);
+    void srl(uint8_t& reg);
+    void swap(uint8_t& reg);
+    void bit(uint8_t u3, uint8_t value);
+    void res(uint8_t u3, uint8_t& reg);
+    void set(uint8_t u3, uint8_t& reg);
+
+    // Control
+
     void call(uint16_t addr);
     void ret();
     void halt();

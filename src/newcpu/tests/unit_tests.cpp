@@ -437,6 +437,21 @@ class CPU::Tests {
         REQUIRE(cpu.bc() == 0x0000);
     }
 
+    void instructionGroupAnd() {
+    }
+
+    void instruction_cpl() {
+        
+    }
+
+    void instructionGroupOr() {
+        
+    }
+
+    void instructionGroupXor() {
+        
+    }
+
     private:
     MMU mmu{};
     CPU cpu{&mmu};

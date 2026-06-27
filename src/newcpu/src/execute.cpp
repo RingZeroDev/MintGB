@@ -348,6 +348,18 @@ void CPU::execute(Instruction ins) {
         // or a, n8
         case Instruction::XOR_Imm8: xor_(fetchByte()); break;
 
+        // rla
+        case Instruction::RLA: rla(); break;
+
+        // rlca
+        case Instruction::RLCA: rlca(); break;
+
+        // rra
+        case Instruction::RRA: rra(); break;
+
+        // rrca
+        case Instruction::RRCA: rrca(); break;
+
         // call n16
         case Instruction::CALL_Addr16: call(fetchWord()); break;
 
