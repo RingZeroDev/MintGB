@@ -100,25 +100,57 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     {
         ImGui::Begin("CPU Monitor");                         
 
-        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("PC: {:04X}", cpuState.pc).c_str());
-        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("A: {:02X}", cpuState.a).c_str());
-        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("B: {:02X}", cpuState.b).c_str());
-        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("C: {:02X}", cpuState.c).c_str());
-        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("D: {:02X}", cpuState.d).c_str());
-        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("E: {:02X}", cpuState.e).c_str());
-        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("H: {:02X}", cpuState.h).c_str());
-        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("L: {:02X}", cpuState.l).c_str());             
-        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("F: {:02X}", cpuState.f).c_str());
+        if (ImGui::BeginTable("Registers", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoHostExtendX)) {
+            ImGui::TableNextRow();
 
-        if (ImGui::ArrowButton("step", ImGuiDir_Right)) {
-            state->cpu.step();
+            ImGui::TableNextColumn();
+            ImGui::Text("PC");
+            ImGui::TableNextColumn();
+            ImGui::Text("%04X", cpuState.pc);
+
+            ImGui::TableNextColumn();
+            ImGui::Text("SP");
+            ImGui::TableNextColumn();
+            ImGui::Text("%04X", cpuState.sp);
+
+            ImGui::TableNextColumn();
+            ImGui::Text("AF");
+            ImGui::TableNextColumn();
+            ImGui::Text("%04X", cpuState.af);
+            
+            ImGui::TableNextColumn();
+            ImGui::Text("BC");
+            ImGui::TableNextColumn();
+            ImGui::Text("%04X", cpuState.bc);
+
+            ImGui::TableNextColumn();
+            ImGui::Text("DE");
+            ImGui::TableNextColumn();
+            ImGui::Text("%04X", cpuState.de);
+
+            ImGui::TableNextColumn();
+            ImGui::Text("HL");
+            ImGui::TableNextColumn();
+            ImGui::Text("%04X", cpuState.hl);
+
+            ImGui::EndTable();
         }
 
-        if (ImGui::ArrowButton("step100", ImGuiDir_Right)) {
-            for (int i = 0; i < 100; i++) {
+        ImGui::End();
+    }
+
+    static unsigned int stepAmount = 1;
+    {
+        ImGui::Begin("Control Panel");
+
+        if (ImGui::ArrowButton("step", ImGuiDir_Right)) {
+            for (int i = 0; i < stepAmount; i++) {
                 state->cpu.step();
             }
         }
+
+
+        ImGui::InputScalar("Step Amount", ImGuiDataType_U32, &stepAmount, nullptr, nullptr, "%d", ImGuiInputTextFlags_CharsDecimal);
 
         ImGui::End();
     }

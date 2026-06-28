@@ -67,8 +67,11 @@ std::string Disassembler::getOperandStr(Operand operand) {
         case Operand::Seven: return "7";
         // Extended 8-bit
         case Operand::Imm8:
-        case Operand::Rel8:
             return "$" + getHexStr(bus.read(currentAddr+1));
+        case Operand::Rel8: {
+            uint16_t ea = static_cast<int8_t>(bus.read(currentAddr+1)) + currentAddr + 2;
+            return "$" + getHexStr(ea);
+        }
         // Extended 16-bit
         case Operand::Imm16:
         case Operand::Addr16: {

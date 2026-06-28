@@ -8,7 +8,7 @@ uint8_t MMU::read(uint16_t addr) {
         return cart.read(addr);
     } else if (addr <= 0x9FFF) { 
         // 8-KiB Video RAM (VRAM)
-        return vram[addr];
+        return vram[addr - 0x8000];
     } else if (addr <= 0xBFFF) {
         // 8-KiB External RAM
         return 0xFF; // mappers not supported yet
@@ -20,7 +20,7 @@ uint8_t MMU::read(uint16_t addr) {
         throw std::runtime_error("Echo RAM is prohibited!");
     } else if (addr <= 0xFE9F) {
         // OAM Memory
-        return oam[addr];
+        return oam[addr - 0xFE00];
     } else if (addr <= 0xFEFF) {
         // Not usable
         throw std::runtime_error("Prohibited memory range written to!");
@@ -29,9 +29,10 @@ uint8_t MMU::read(uint16_t addr) {
         return readIO(addr & 0xFF);
     } else if (addr <= 0xFFFE) {
         // High RAM (HRAM)
-        return hram[addr];
+        return hram[addr - 0xFF80];
     } else {
         // Interrupt Enable Register
+        return 0xFF;
     }
 }
 
@@ -41,7 +42,7 @@ void MMU::write(uint16_t addr, uint8_t value) {
         return; // do nothing (bank switching unimplemented)
     } else if (addr <= 0x9FFF) { 
         // 8-KiB Video RAM (VRAM)
-        vram[addr - 0x9FFF] = value;
+        vram[addr - 0x8000] = value;
     } else if (addr <= 0xBFFF) {
         // 8-KiB External RAM
         return; // do nothing (external ram not supported)
@@ -50,21 +51,22 @@ void MMU::write(uint16_t addr, uint8_t value) {
         wram[addr - 0xC000] = value;
     } else if (addr <= 0xFDFF) {
         // Echo RAM
-        throw std::runtime_error("Echo RAM not supported!");
+        return; // echo RAM not supported
     } else if (addr <= 0xFE9F) {
         // OAM Memory
-        oam[addr - 0xFE9F] = value;
+        oam[addr - 0xFE00] = value;
     } else if (addr <= 0xFEFF) {
         // Not usable
-        throw std::runtime_error("Prohibited memory range written to!");
+        return; // prohibited memory range
     } else if (addr <= 0xFF7F) {
         // I/O Registers
         writeIO(addr & 0xFF, value);
     } else if (addr <= 0xFFFE) {
         // High RAM (HRAM)
-        hram[addr] = value;
+        hram[addr - 0xFF80] = value;
     } else {
         // Interrupt Enable Register
+        return;
     }
 }
 
@@ -76,7 +78,7 @@ uint8_t MMU::readIO(uint8_t addr) {
         // Serial transfer
         case 0x01: 
         case 0x02:
-            throw std::runtime_error("Serial transfer is not supported!");
+            return 0xFF;
 
         // Timer and divider
         case 0x04:
@@ -138,7 +140,7 @@ uint8_t MMU::readIO(uint8_t addr) {
         case 0x41:
         case 0x42:
         case 0x43:
-        case 0x44:
+        case 0x44: return 0x94; // hack for now
         case 0x45:
         case 0x46:
         case 0x47:
@@ -152,7 +154,7 @@ uint8_t MMU::readIO(uint8_t addr) {
         case 0x50: return 0xFF;
 
         default:
-            throw std::runtime_error(std::format("Unrecognized IO Register: {:02X}", addr));
+            return 0xFF; // Ignore the write (unused IO registers)
     }
 } 
 
@@ -164,7 +166,7 @@ void MMU::writeIO(uint8_t addr, uint8_t value) {
         // Serial transfer
         case 0x01: 
         case 0x02:
-            throw std::runtime_error("Serial transfer is not supported!");
+            return;
 
         // Timer and divider
         case 0x04:
@@ -240,7 +242,7 @@ void MMU::writeIO(uint8_t addr, uint8_t value) {
         case 0x50: return;
 
         default:
-            throw std::runtime_error(std::format("Unrecognized IO Register: {:02X}", addr));
+            return; // Ignore the write (unused IO registers)
     }
 }
 
