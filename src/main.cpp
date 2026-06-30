@@ -20,6 +20,7 @@ struct AppState {
     SDL_Renderer* renderer;
     ImGuiIO& io;
     SDL_Texture* tilesTexture;
+    SDL_Texture* tilemapTexture;
     Cartridge cart { "C:\\Users\\tpmac\\MintGB\\MintGB\\roms\\tetris.gb" };
     PPU ppu {};
     MMU mmu { cart, ppu };
@@ -68,11 +69,20 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
         128
     );
 
+    SDL_Texture* tilemapTexture = SDL_CreateTexture(
+        renderer,
+        SDL_PIXELFORMAT_RGBA32,
+        SDL_TEXTUREACCESS_TARGET,
+        256,
+        256
+    );
+
     AppState* state = new AppState {
         window,
         renderer,
         io,
-        tilesTexture
+        tilesTexture,
+        tilemapTexture
     };
 
     state->interrupt.writeIE(static_cast<uint8_t>(InterruptSource::VBlank));
@@ -131,6 +141,36 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         }
     }
     SDL_UpdateTexture(state->tilesTexture, nullptr, static_cast<void*>(tilesData.data()), 128 * sizeof(uint32_t));
+
+    SDL_SetRenderTarget(state->renderer, state->tilemapTexture);
+    for (int i = 0; i < 1024; i++) {
+        uint8_t index = state->mmu.vram[0x1800 + i];
+        uint8_t tileStartX = index % 16 * 8; 
+        uint8_t tileStartY = index / 16 * 8;
+
+        uint8_t mapStartX = i % 32 * 8;
+        uint8_t mapStartY = i / 32 * 8; 
+
+        SDL_FRect src = SDL_FRect { 
+            static_cast<float>(tileStartX), 
+            static_cast<float>(tileStartY), 
+            8, 
+            8 
+        };
+        SDL_FRect dst = SDL_FRect {
+            static_cast<float>(mapStartX),
+            static_cast<float>(mapStartY),
+            8,
+            8
+        };
+        SDL_RenderTexture(
+            state->renderer, 
+            state->tilesTexture, 
+            &src,
+            &dst
+        );
+    }
+    SDL_SetRenderTarget(state->renderer, nullptr);
 
     ImGui_ImplSDLRenderer3_NewFrame();
     ImGui_ImplSDL3_NewFrame();
@@ -278,6 +318,26 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 
         ImGui::Image(
             (ImTextureID)(intptr_t)(state->tilesTexture),
+            size
+        );
+
+        ImGui::End();
+    }
+
+    {
+        ImGui::Begin("Tilemap Viewer");
+
+        constexpr float tilemapAspect = 1;
+        ImVec2 size = ImGui::GetContentRegionAvail();
+        
+        if (size.x / size.y > tilemapAspect) {
+            size.x = size.y * tilemapAspect;
+        } else {
+            size.y = size.x / tilemapAspect;
+        }
+
+        ImGui::Image(
+            (ImTextureID)(intptr_t)(state->tilemapTexture),
             size
         );
 
