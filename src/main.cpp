@@ -22,9 +22,9 @@ struct AppState {
     SDL_Texture* tilesTexture;
     SDL_Texture* tilemapTexture;
     Cartridge cart { "C:\\Users\\tpmac\\MintGB\\MintGB\\roms\\tetris.gb" };
-    PPU ppu {};
-    MMU mmu { cart, ppu };
     InterruptSystem interrupt;
+    PPU ppu { interrupt };
+    MMU mmu { cart, ppu, interrupt };
     CPU cpu { mmu, interrupt };
 };
 

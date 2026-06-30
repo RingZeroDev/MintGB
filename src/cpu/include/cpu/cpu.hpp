@@ -24,8 +24,7 @@ class CPU {
         uint8_t a = 0x00, f = 0x00, b = 0x00, c = 0x00, d = 0x00, e = 0x00, h = 0x00, l = 0x00;
         uint16_t pc = 0x0000, sp = 0x0000;
 
-        // Warning: testing purposes
-        bool ime = true, imePending = false, halted = false;
+        bool ime = false, imePending = false, halted = false;
 
         RegisterPair af{ a, f };
         RegisterPair bc{ b, c };

@@ -1,9 +1,13 @@
 #pragma once
 
+#include "hardware/interrupt.hpp"
+
 #include <cstdint>
 
 class PPU {
     private:
+        InterruptSystem& interrupt;
+
         uint8_t lcdc = 0x00; // LCD Control
 
         uint8_t ly = 0x00; // LCD Y coordinate [read only]
@@ -20,6 +24,8 @@ class PPU {
         unsigned int dots = 0;
 
     public:
+        PPU(InterruptSystem& interrupt);
+
         void cycle(); 
 
         uint8_t readLY() const;

@@ -49,6 +49,11 @@ int8_t CPU::fetchRelative() {
 }
 
 void CPU::step() {
+    if (imePending) {
+        imePending = false;
+        ime = true;
+    }
+
     uint8_t inte = interrupt.readIE() & interrupt.readIF();
     if (ime && (inte & 0b00011111)) {
         serviceInterrupt(inte);
@@ -68,7 +73,7 @@ void CPU::step() {
 constexpr std::array<uint8_t, 5> interruptVectors = {{ 0x40, 0x48, 0x50, 0x58, 0x60 }};
 
 void CPU::serviceInterrupt(uint8_t inte) {
-    int bit = std::countr_zero(interrupt.readIF());
+    int bit = std::countr_zero(inte);
 
     interrupt.writeIF(interrupt.readIF() & ~(1 << bit));
     ime = false;

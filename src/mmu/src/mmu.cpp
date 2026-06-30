@@ -1,6 +1,6 @@
 #include "mmu.hpp" 
 
-MMU::MMU(Cartridge& cart, PPU& ppu) : cart(cart), ppu(ppu) {}
+MMU::MMU(Cartridge& cart, PPU& ppu, InterruptSystem& interrupt) : cart(cart), ppu(ppu), interrupt(interrupt) {}
 
 uint8_t MMU::read(uint16_t addr) {
     if (addr <= 0x7FFF) { 
@@ -32,7 +32,7 @@ uint8_t MMU::read(uint16_t addr) {
         return hram[addr - 0xFF80];
     } else {
         // Interrupt Enable Register
-        return 0xFF;
+        return interrupt.readIE();
     }
 }
 
@@ -66,7 +66,7 @@ void MMU::write(uint16_t addr, uint8_t value) {
         hram[addr - 0xFF80] = value;
     } else {
         // Interrupt Enable Register
-        return;
+        interrupt.writeIE(value);
     }
 }
 
