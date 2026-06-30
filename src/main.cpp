@@ -8,6 +8,7 @@
 
 #include "cpu/cpu.hpp"
 #include "mmu/mmu.hpp"
+#include "ppu/ppu.hpp"
 #include "cartridge/cartridge.hpp"
 #include "hardware/interrupt.hpp"
 #include "disassembler/disassembler.hpp"
@@ -18,8 +19,10 @@ struct AppState {
     SDL_Window* window;
     SDL_Renderer* renderer;
     ImGuiIO& io;
+    SDL_Texture* tilesTexture;
     Cartridge cart { "C:\\Users\\tpmac\\MintGB\\MintGB\\roms\\tetris.gb" };
-    MMU mmu { cart };
+    PPU ppu {};
+    MMU mmu { cart, ppu };
     InterruptSystem interrupt;
     CPU cpu { mmu, interrupt };
 };
@@ -57,10 +60,19 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
     ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
     ImGui_ImplSDLRenderer3_Init(renderer);
 
+    SDL_Texture* tilesTexture = SDL_CreateTexture(
+        renderer,
+        SDL_PIXELFORMAT_RGBA32,
+        SDL_TEXTUREACCESS_STREAMING,
+        128,
+        128
+    );
+
     AppState* state = new AppState {
         window,
         renderer,
-        io
+        io,
+        tilesTexture
     };
 
     state->interrupt.writeIE(static_cast<uint8_t>(InterruptSource::VBlank));
@@ -89,6 +101,36 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         SDL_Delay(10);
         return SDL_APP_CONTINUE;
     }
+
+    const SDL_PixelFormatDetails* format = SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_RGBA32);
+    static std::array<uint32_t, 128 * 128> tilesData{};
+    const std::array<SDL_Color, 4> TILES_PALLETE = {{ 
+        SDL_Color { 255, 255, 255, 255 }, 
+        SDL_Color { 211, 211, 211, 255 }, 
+        SDL_Color { 169, 169, 169, 255 },
+        SDL_Color { 0, 0, 0, 255 } 
+    }};  
+    for (int tile = 0; tile < 256; tile++) {
+        for (int row = 0; row < 8; row++) {
+            uint8_t lowByte = state->mmu.vram[tile * 16 + row * 2];
+            uint8_t highByte = state->mmu.vram[tile * 16 + row * 2 + 1];
+
+            for (int pixel = 0; pixel < 8; pixel++) {
+                uint8_t bit = 7 - pixel;
+                uint8_t lsb = (lowByte >> bit) & 1;
+                uint8_t msb = (highByte >> bit) & 1;
+                uint8_t index = (msb << 1) | lsb;
+
+                uint8_t tileX = tile % 16;
+                uint8_t tileY = tile / 16;
+                uint8_t pixelX = tileX * 8 + pixel;
+                uint8_t pixelY = tileY * 8 + row;
+                SDL_Color color = TILES_PALLETE[index];
+                tilesData[pixelY * 128 + pixelX] = SDL_MapRGBA(format, nullptr, color.r, color.g, color.b, color.a);
+            }
+        }
+    }
+    SDL_UpdateTexture(state->tilesTexture, nullptr, static_cast<void*>(tilesData.data()), 128 * sizeof(uint32_t));
 
     ImGui_ImplSDLRenderer3_NewFrame();
     ImGui_ImplSDL3_NewFrame();
@@ -214,6 +256,34 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         ImGui::End();
     }
 
+    {
+        ImGui::Begin("PPU");
+
+        ImGui::Text("LY: %04X", state->ppu.readLY());
+
+        ImGui::End();
+    }
+
+    {
+        ImGui::Begin("Tile Viewer");
+
+        constexpr float tilesAspect = 1;
+        ImVec2 size = ImGui::GetContentRegionAvail();
+        
+        if (size.x / size.y > tilesAspect) {
+            size.x = size.y * tilesAspect;
+        } else {
+            size.y = size.x / tilesAspect;
+        }
+
+        ImGui::Image(
+            (ImTextureID)(intptr_t)(state->tilesTexture),
+            size
+        );
+
+        ImGui::End();
+    }
+
     ImGui::Render();
     SDL_SetRenderScale(state->renderer, state->io.DisplayFramebufferScale.x, state->io.DisplayFramebufferScale.y);
     SDL_SetRenderDrawColorFloat(state->renderer, 0.45f, 0.55f, 0.60f, 1.00f);
@@ -233,6 +303,7 @@ void SDL_AppQuit(void* appstate, SDL_AppResult result) {
     ImGui_ImplSDL3_Shutdown();
     ImGui::DestroyContext();
 
+    SDL_DestroyTexture(state->tilesTexture);
     SDL_DestroyRenderer(state->renderer);
     SDL_DestroyWindow(state->window);
     

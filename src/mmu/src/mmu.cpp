@@ -1,6 +1,6 @@
 #include "mmu.hpp" 
 
-MMU::MMU(Cartridge& cart) : cart(cart) {}
+MMU::MMU(Cartridge& cart, PPU& ppu) : cart(cart), ppu(ppu) {}
 
 uint8_t MMU::read(uint16_t addr) {
     if (addr <= 0x7FFF) { 
@@ -140,7 +140,7 @@ uint8_t MMU::readIO(uint8_t addr) {
         case 0x41:
         case 0x42:
         case 0x43:
-        case 0x44: return 0x94; // hack for now
+        case 0x44: return ppu.readLY();
         case 0x45:
         case 0x46:
         case 0x47:
@@ -246,4 +246,6 @@ void MMU::writeIO(uint8_t addr, uint8_t value) {
     }
 }
 
-void MMU::cycle() {}
+void MMU::cycle() {
+    ppu.cycle();
+}

@@ -8,20 +8,22 @@
 CPU::CPU(Bus& bus, InterruptSystem& interrupt) : bus(bus), interrupt(interrupt) {}
 
 uint8_t CPU::readByte(uint16_t addr) {
+    bus.cycle();
     return bus.read(addr);
 }
 
 uint16_t CPU::readWord(uint16_t addr) {
-    return bus.read(addr) | (bus.read(addr+1) << 8);
+    return readByte(addr) | (readByte(addr+1) << 8);
 }
 
 void CPU::writeByte(uint16_t addr, uint8_t value) {
+    bus.cycle();
     bus.write(addr, value);
 }
 
 void CPU::writeWord(uint16_t addr, uint16_t value) {
-    bus.write(addr, value & 0xFF);
-    bus.write(addr+1, value >> 8);
+    writeByte(addr, value & 0xFF);
+    writeByte(addr+1, value >> 8);
 }
 
 void CPU::cycle() {

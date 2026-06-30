@@ -1,0 +1,17 @@
+cmake_minimum_required(VERSION 3.10)
+project(PPU)
+set(CMAKE_CXX_STANDARD 20)
+
+add_library(PPU STATIC)
+
+target_sources(PPU
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/ppu.cpp
+)
+
+target_include_directories(PPU
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/ppu
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
