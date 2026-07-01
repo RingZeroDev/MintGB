@@ -11,6 +11,8 @@
 #include "ppu/ppu.hpp"
 #include "cartridge/cartridge.hpp"
 #include "hardware/interrupt.hpp"
+#include "hardware/joypad.hpp"
+#include "hardware/timer.hpp"
 #include "disassembler/disassembler.hpp"
 
 #include <memory>
@@ -24,7 +26,9 @@ struct AppState {
     Cartridge cart { "C:\\Users\\tpmac\\MintGB\\MintGB\\roms\\tetris.gb" };
     InterruptSystem interrupt;
     PPU ppu { interrupt };
-    MMU mmu { cart, ppu, interrupt };
+    Joypad joypad{};
+    Timer timer{};
+    MMU mmu { cart, ppu, interrupt, joypad, timer };
     CPU cpu { mmu, interrupt };
 };
 
@@ -340,6 +344,24 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
             (ImTextureID)(intptr_t)(state->tilemapTexture),
             size
         );
+
+        ImGui::End();
+    }
+
+    {
+        ImGui::Begin("Input");
+
+        ImGui::Text("JOYP: %02X", state->joypad.readJOYP());
+
+        ImGui::Checkbox("Up", &state->joypad.up);
+        ImGui::Checkbox("Down", &state->joypad.down); 
+        ImGui::Checkbox("Left", &state->joypad.left);
+        ImGui::Checkbox("Right", &state->joypad.right);
+
+        ImGui::Checkbox("A", &state->joypad.a);
+        ImGui::Checkbox("B", &state->joypad.b);
+        ImGui::Checkbox("Select", &state->joypad.select);
+        ImGui::Checkbox("Start", &state->joypad.start);
 
         ImGui::End();
     }

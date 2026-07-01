@@ -8,6 +8,7 @@ target_sources(Hardware
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/timer.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/interrupt.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/joypad.cpp
 )
 
 target_include_directories(Hardware

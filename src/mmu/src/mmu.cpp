@@ -1,6 +1,6 @@
 #include "mmu.hpp" 
 
-MMU::MMU(Cartridge& cart, PPU& ppu, InterruptSystem& interrupt) : cart(cart), ppu(ppu), interrupt(interrupt) {}
+MMU::MMU(Cartridge& cart, PPU& ppu, InterruptSystem& interrupt, Joypad& joypad, Timer& timer) : cart(cart), ppu(ppu), interrupt(interrupt), joypad(joypad), timer(timer) {}
 
 uint8_t MMU::read(uint16_t addr) {
     if (addr <= 0x7FFF) { 
@@ -73,7 +73,7 @@ void MMU::write(uint16_t addr, uint8_t value) {
 uint8_t MMU::readIO(uint8_t addr) {
     switch (addr) {
         // Joypad input
-        case 0x00: return 0xFF;
+        case 0x00: return joypad.readJOYP();
 
         // Serial transfer
         case 0x01: 
@@ -81,7 +81,7 @@ uint8_t MMU::readIO(uint8_t addr) {
             return 0xFF;
 
         // Timer and divider
-        case 0x04:
+        case 0x04: return timer.readDIV();
         case 0x05:
         case 0x06: 
         case 0x07:
@@ -161,7 +161,7 @@ uint8_t MMU::readIO(uint8_t addr) {
 void MMU::writeIO(uint8_t addr, uint8_t value) {
     switch (addr) {
         // Joypad input
-        case 0x00: return;
+        case 0x00: joypad.writeJOYP(value); break;
 
         // Serial transfer
         case 0x01: 
@@ -169,7 +169,7 @@ void MMU::writeIO(uint8_t addr, uint8_t value) {
             return;
 
         // Timer and divider
-        case 0x04:
+        case 0x04: timer.resetDIV(); break;
         case 0x05:
         case 0x06: 
         case 0x07:
@@ -248,4 +248,5 @@ void MMU::writeIO(uint8_t addr, uint8_t value) {
 
 void MMU::cycle() {
     ppu.cycle();
+    timer.cycle();
 }
