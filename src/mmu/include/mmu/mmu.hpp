@@ -7,6 +7,8 @@
 #include "hardware/joypad.hpp"
 #include "hardware/timer.hpp"
 
+class PPU;
+
 class MMU final : public Bus {
     private:
         Cartridge& cart;

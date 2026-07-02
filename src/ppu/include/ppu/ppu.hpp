@@ -1,11 +1,15 @@
 #pragma once
 
+#include "mmu/mmu.hpp"
 #include "hardware/interrupt.hpp"
 
 #include <cstdint>
 
+class MMU;
+
 class PPU {
     private:
+        MMU& mmu;
         InterruptSystem& interrupt;
 
         uint8_t lcdc = 0x00; // LCD Control
@@ -21,12 +25,18 @@ class PPU {
 
         uint8_t wy = 0x00, wx = 0x00; // Window Y position, X position plus 7
 
+        uint8_t currentDMA = 0;
+        uint8_t dma = 0x00; // DMA: OAM DMA source address and start
+
         unsigned int dots = 0;
 
     public:
-        PPU(InterruptSystem& interrupt);
+        PPU(MMU& mmu, InterruptSystem& interrupt);
 
         void cycle(); 
 
         uint8_t readLY() const;
+
+        uint8_t readDMA();
+        void writeDMA(uint8_t value);
 };

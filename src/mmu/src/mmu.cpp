@@ -141,8 +141,8 @@ uint8_t MMU::readIO(uint8_t addr) {
         case 0x42:
         case 0x43:
         case 0x44: return ppu.readLY();
-        case 0x45:
-        case 0x46:
+        case 0x45: 
+        case 0x46: return ppu.readDMA();
         case 0x47:
         case 0x48:
         case 0x49:
@@ -229,8 +229,8 @@ void MMU::writeIO(uint8_t addr, uint8_t value) {
         case 0x42:
         case 0x43:
         case 0x44:
-        case 0x45:
-        case 0x46:
+        case 0x45: break;
+        case 0x46: ppu.writeDMA(value); break;
         case 0x47:
         case 0x48:
         case 0x49:

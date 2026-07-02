@@ -25,10 +25,10 @@ struct AppState {
     SDL_Texture* tilemapTexture;
     Cartridge cart { "C:\\Users\\tpmac\\MintGB\\MintGB\\roms\\tetris.gb" };
     InterruptSystem interrupt;
-    PPU ppu { interrupt };
     Joypad joypad{};
     Timer timer{};
     MMU mmu { cart, ppu, interrupt, joypad, timer };
+    PPU ppu { mmu, interrupt };
     CPU cpu { mmu, interrupt };
 };
 
@@ -303,7 +303,8 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     {
         ImGui::Begin("PPU");
 
-        ImGui::Text("LY: %04X", state->ppu.readLY());
+        ImGui::Text("LY: %02X", state->ppu.readLY());\
+        ImGui::Text("OAM DMA: %02X", state->ppu.readDMA());
 
         ImGui::End();
     }
