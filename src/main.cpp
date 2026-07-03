@@ -23,6 +23,7 @@ struct AppState {
     ImGuiIO& io;
     SDL_Texture* tilesTexture;
     SDL_Texture* tilemapTexture;
+    SDL_Texture* spritesTexture;
     Cartridge cart { "C:\\Users\\tpmac\\MintGB\\MintGB\\roms\\tetris.gb" };
     InterruptSystem interrupt;
     Joypad joypad{};
@@ -81,12 +82,21 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
         256
     );
 
+    SDL_Texture* spritesTexture = SDL_CreateTexture(
+        renderer,
+        SDL_PIXELFORMAT_RGBA32,
+        SDL_TEXTUREACCESS_TARGET,
+        256,
+        256
+    );
+
     AppState* state = new AppState {
         window,
         renderer,
         io,
         tilesTexture,
-        tilemapTexture
+        tilemapTexture,
+        spritesTexture
     };
 
     state->interrupt.writeIE(static_cast<uint8_t>(InterruptSource::VBlank));
@@ -176,6 +186,41 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     }
     SDL_SetRenderTarget(state->renderer, nullptr);
 
+    SDL_SetRenderTarget(state->renderer, state->spritesTexture);
+    SDL_SetRenderDrawColor(state->renderer, 0, 0, 0, 255);
+    SDL_RenderClear(state->renderer);
+    for (int i = 0; i < 40; i++) {
+        uint8_t ypos = state->mmu.oam[i * 4];
+        uint8_t xpos = state->mmu.oam[i * 4 + 1];
+        uint8_t tile = state->mmu.oam[i * 4 + 2];
+        uint8_t attr = state->mmu.oam[i * 4 + 3];
+
+        uint8_t tileStartX = tile % 16 * 8; 
+        uint8_t tileStartY = tile / 16 * 8;
+
+        if (ypos > 0) {
+            SDL_FRect src = SDL_FRect { 
+                static_cast<float>(tileStartX), 
+                static_cast<float>(tileStartY), 
+                8, 
+                8 
+            };
+            SDL_FRect dst = SDL_FRect {
+                static_cast<float>(xpos),
+                static_cast<float>(ypos),
+                8,
+                8
+            };
+            SDL_RenderTexture(
+                state->renderer,
+                state->tilesTexture,
+                &src,
+                &dst
+            );
+        }
+    }
+    SDL_SetRenderTarget(state->renderer, nullptr);
+
     ImGui_ImplSDLRenderer3_NewFrame();
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
@@ -225,12 +270,23 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         ImGui::End();
     }
 
+    static bool running = false;
     static unsigned int stepAmount = 1;
     {
         ImGui::Begin("Control Panel");
 
         if (ImGui::ArrowButton("step", ImGuiDir_Right)) {
             for (int i = 0; i < stepAmount; i++) {
+                state->cpu.step();
+            }
+        }
+
+        if (ImGui::Button("Run")) {
+            running = !running;
+        }
+
+        if (running) {
+            for (int i = 0; i < 10000; i++) {
                 state->cpu.step();
             }
         }
@@ -343,6 +399,26 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 
         ImGui::Image(
             (ImTextureID)(intptr_t)(state->tilemapTexture),
+            size
+        );
+
+        ImGui::End();
+    }
+
+    {
+        ImGui::Begin("Sprite Viewer");
+
+        constexpr float spriteAspect = 1;
+        ImVec2 size = ImGui::GetContentRegionAvail();
+        
+        if (size.x / size.y > spriteAspect) {
+            size.x = size.y * spriteAspect;
+        } else {
+            size.y = size.x / spriteAspect;
+        }
+
+        ImGui::Image(
+            (ImTextureID)(intptr_t)(state->spritesTexture),
             size
         );
 
