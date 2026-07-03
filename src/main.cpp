@@ -206,8 +206,8 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
                 8 
             };
             SDL_FRect dst = SDL_FRect {
-                static_cast<float>(xpos),
-                static_cast<float>(ypos),
+                static_cast<float>(xpos - 8),
+                static_cast<float>(ypos - 16),
                 8,
                 8
             };
