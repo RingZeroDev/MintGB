@@ -2,16 +2,21 @@
 
 #include <cstdint>
 
+struct JoypadInput {
+    bool right; bool left; bool up; bool down;
+    bool a; bool b; bool select; bool start;
+};
+
 class Joypad {
     private:
-        uint8_t joyp = 0b00110000; // P1/JOYP: Joypad
+        uint8_t joyp = 0b11111111; // P1/JOYP: Joypad
 
-        void setInput(bool inp1, bool inp2, bool inp3, bool inp4);
+        static uint8_t constructInput(bool inp0, bool inp1, bool inp2, bool inp3);
 
     public:
-        bool right = false, left = false, up = false, down = false;
-        bool a = false, b = false, select = false, start = false;
+        void setInput(JoypadInput input);
+        JoypadInput getInput();
 
-        uint8_t readJOYP();
-        void writeJOYP(uint8_t value);
+        uint8_t read();
+        void write(uint8_t value);
 };

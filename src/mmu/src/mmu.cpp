@@ -1,11 +1,11 @@
 #include "mmu.hpp" 
 
-MMU::MMU(Cartridge& cart, PPU& ppu, InterruptSystem& interrupt, Joypad& joypad, Timer& timer) : cart(cart), ppu(ppu), interrupt(interrupt), joypad(joypad), timer(timer) {}
+MMU::MMU(Cartridge* cart, PPU& ppu, InterruptSystem& interrupt, Joypad& joypad, Timer& timer) : cart(cart), ppu(ppu), interrupt(interrupt), joypad(joypad), timer(timer) {}
 
 uint8_t MMU::read(uint16_t addr) {
     if (addr <= 0x7FFF) { 
         // 16 KiB ROM Bank 00 and 16 KiB ROM Bank 01-NN
-        return cart.read(addr);
+        return cart->read(addr);
     } else if (addr <= 0x9FFF) { 
         // 8-KiB Video RAM (VRAM)
         return vram[addr - 0x8000];
@@ -73,7 +73,7 @@ void MMU::write(uint16_t addr, uint8_t value) {
 uint8_t MMU::readIO(uint8_t addr) {
     switch (addr) {
         // Joypad input
-        case 0x00: return joypad.readJOYP();
+        case 0x00: return joypad.read();
 
         // Serial transfer
         case 0x01: 
@@ -161,7 +161,7 @@ uint8_t MMU::readIO(uint8_t addr) {
 void MMU::writeIO(uint8_t addr, uint8_t value) {
     switch (addr) {
         // Joypad input
-        case 0x00: joypad.writeJOYP(value); break;
+        case 0x00: joypad.write(value); break;
 
         // Serial transfer
         case 0x01: 

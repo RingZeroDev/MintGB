@@ -48,6 +48,24 @@ int8_t CPU::fetchRelative() {
     return static_cast<int8_t>(fetchByte());
 }
 
+void CPU::reset() {
+    pc = 0x0000;
+    sp = 0x0000;
+    af = 0x0000;
+    bc = 0x0000;
+    de = 0x0000;
+    hl = 0x0000;
+
+    zero = false;
+    subtract = false;
+    halfCarry = false;
+    carry = false;
+
+    ime = false;
+    imePending = false;
+    halted = false;
+}
+
 void CPU::step() {
     if (imePending) {
         imePending = false;
@@ -83,14 +101,31 @@ void CPU::serviceInterrupt(uint8_t inte) {
     cycle();
 }
 
-CPUState CPU::state() {
+CPUState CPU::getState() {
     return CPUState {
         pc, sp, af, bc, de, hl,
-        a, b, c, d, e, f, h, l,
 
         zero, subtract, halfCarry, carry,
         ime, imePending, halted
     };
+}
+
+void CPU::setState(CPUState state) {
+    pc = state.pc;
+    sp = state.sp;
+    af = state.af &= 0b1111111111110000;
+    bc = state.bc;
+    de = state.de;
+    hl = state.hl;
+
+    zero = state.zero;
+    subtract = state.subtract;
+    halfCarry = state.halfCarry;
+    carry = state.carry;
+
+    ime = state.ime;
+    imePending = state.imePending;
+    halted = state.halted;
 }
 
 

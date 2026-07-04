@@ -10,7 +10,6 @@
 
 struct CPUState {
     uint16_t pc, sp, af, bc, de, hl;
-    uint8_t a, b, c, d, e, f, h, l;
     
     bool zero, subtract, halfCarry, carry;
     bool ime, imePending, halted;
@@ -231,7 +230,10 @@ class CPU {
         void stop();
 
     public:
-        CPUState state();
+        CPUState getState();
+        void setState(CPUState cpu);
+
+        void reset();
         void step();
         explicit CPU(Bus& bus, InterruptSystem& interrupt);
 };
