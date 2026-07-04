@@ -16,11 +16,11 @@ class InterruptSystem {
         uint8_t if_ = 0b11100000; // IF: Interrupt Flag
 
     public:
-        uint8_t readIE();
-        void writeIE(uint8_t value);
+        uint8_t readEnable();
+        void writeEnable(uint8_t value);
 
-        uint8_t readIF();
-        void writeIF(uint8_t value);
+        uint8_t readFlag();
+        void writeFlag(uint8_t value);
 
         void issueInterrupt(InterruptSource source);
 };

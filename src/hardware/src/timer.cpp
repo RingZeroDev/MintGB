@@ -2,46 +2,51 @@
 
 #include <array>
 
+Timer::Timer(InterruptSystem& interrupt) : interrupt(interrupt) {}
+
 void Timer::cycle() {
     div += 4;
 
     if ((tac >> 2 & 1) && div % (frequency * 4) == 0) {
         tima++;
-        if (tima == 0) tima = tma;
+        if (tima == 0) {
+            tima = tma;
+            interrupt.issueInterrupt(InterruptSource::Timer);
+        }
     }
 }
 
-uint8_t Timer::readTIMA() {
+uint8_t Timer::readCounter() {
     return tima;
 }
 
-void Timer::writeTIMA(uint8_t value) {
+void Timer::writeCounter(uint8_t value) {
     tima = value;
 }
 
-uint8_t Timer::readDIV() {
-    return div >> 8;
-}
-
-void Timer::resetDIV() {
+void Timer::resetDivider() {
     div = 0;
 }
 
-uint8_t Timer::readTMA() {
+uint8_t Timer::readDivider() {
+    return div >> 8;
+}
+
+uint8_t Timer::readModulo() {
     return tma;
 }
 
-void Timer::writeTMA(uint8_t value) {
+void Timer::writeModulo(uint8_t value) {
     tma = value;
 }
 
-uint8_t Timer::readTAC() {
+uint8_t Timer::readControl() {
     return tac;
 }
 
 constexpr std::array<uint16_t, 4> frequencies = {{ 256, 4, 16, 64 }}; 
 
-void Timer::writeTAC(uint8_t value) {
+void Timer::writeControl(uint8_t value) {
     tac = value | 0b11111000;
     frequency = frequencies[tac & 0b11];
 }

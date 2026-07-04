@@ -32,7 +32,7 @@ uint8_t MMU::read(uint16_t addr) {
         return hram[addr - 0xFF80];
     } else {
         // Interrupt Enable Register
-        return interrupt.readIE();
+        return interrupt.readEnable();
     }
 }
 
@@ -66,7 +66,7 @@ void MMU::write(uint16_t addr, uint8_t value) {
         hram[addr - 0xFF80] = value;
     } else {
         // Interrupt Enable Register
-        interrupt.writeIE(value);
+        interrupt.writeEnable(value);
     }
 }
 
@@ -81,14 +81,13 @@ uint8_t MMU::readIO(uint8_t addr) {
             return 0xFF;
 
         // Timer and divider
-        case 0x04: return timer.readDIV();
-        case 0x05:
-        case 0x06: 
-        case 0x07:
-            return 0xFF;
+        case 0x04: return timer.readDivider();
+        case 0x05: return timer.readCounter();
+        case 0x06: return timer.readModulo();
+        case 0x07: return timer.readControl();
 
         // Interrupts
-        case 0x0F: return 0xFF;
+        case 0x0F: return interrupt.readFlag();
 
         // Audio
         case 0x10:
@@ -169,14 +168,13 @@ void MMU::writeIO(uint8_t addr, uint8_t value) {
             return;
 
         // Timer and divider
-        case 0x04: timer.resetDIV(); break;
-        case 0x05:
-        case 0x06: 
-        case 0x07:
-            return;
+        case 0x04: timer.resetDivider(); break;
+        case 0x05: timer.writeCounter(value); break;
+        case 0x06: timer.writeModulo(value); break;
+        case 0x07: timer.writeControl(value); break;
 
         // Interrupts
-        case 0x0F: return;
+        case 0x0F: interrupt.writeFlag(value); break; 
 
         // Audio
         case 0x10:
