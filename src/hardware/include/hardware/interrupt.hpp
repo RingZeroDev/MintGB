@@ -10,12 +10,18 @@ enum class InterruptSource : uint8_t {
     Joypad = 1 << 4,
 };
 
+using InterruptCallback = void (*)(InterruptSource);
+
 class InterruptSystem {
     private:
         uint8_t ie = 0b11100000; // IE: Interrupt Enable
         uint8_t if_ = 0b11100000; // IF: Interrupt Flag
 
+        InterruptCallback callback;
+
     public:
+        void reset();
+
         uint8_t readEnable();
         void writeEnable(uint8_t value);
 
@@ -23,4 +29,5 @@ class InterruptSystem {
         void writeFlag(uint8_t value);
 
         void issueInterrupt(InterruptSource source);
+        void setCallback(InterruptCallback newCallback);
 };

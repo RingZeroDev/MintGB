@@ -14,6 +14,8 @@ class Joypad {
         static uint8_t constructInput(bool inp0, bool inp1, bool inp2, bool inp3);
 
     public:
+        void reset();
+
         void setInput(JoypadInput input);
         JoypadInput getInput();
 

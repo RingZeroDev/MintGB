@@ -1,6 +1,19 @@
 #include "mmu.hpp" 
 
-MMU::MMU(Cartridge* cart, PPU& ppu, InterruptSystem& interrupt, Joypad& joypad, Timer& timer) : cart(cart), ppu(ppu), interrupt(interrupt), joypad(joypad), timer(timer) {}
+#include <algorithm>
+
+MMU::MMU(PPU& ppu, InterruptSystem& interrupt, Joypad& joypad, Timer& timer) : cart(cart), ppu(ppu), interrupt(interrupt), joypad(joypad), timer(timer) {}
+
+void MMU::reset() {
+    std::fill(vram.begin(), vram.end(), 0x00);
+    std::fill(wram.begin(), wram.end(), 0x00);
+    std::fill(oam.begin(), oam.end(), 0x00);
+    std::fill(hram.begin(), hram.end(), 0x00);
+}
+
+void MMU::insertCartridge(Cartridge* newCart) {
+    cart = newCart;
+}
 
 uint8_t MMU::read(uint16_t addr) {
     if (addr <= 0x7FFF) { 
@@ -135,14 +148,14 @@ uint8_t MMU::readIO(uint8_t addr) {
             return 0xFF;
 
         // LCD Control, Status, Position, Scrolling, and Palettes
-        case 0x40:
-        case 0x41:
+        case 0x40: return ppu.readControl();
+        case 0x41: return ppu.readStatus();
         case 0x42:
         case 0x43:
-        case 0x44: return ppu.readLY();
-        case 0x45: 
-        case 0x46: return ppu.readDMA();
-        case 0x47:
+        case 0x44: return ppu.readY();
+        case 0x45: return ppu.readYCompare();
+        case 0x46: return ppu.startDMA();
+        case 0x47: 
         case 0x48:
         case 0x49:
         case 0x4A:
@@ -222,12 +235,12 @@ void MMU::writeIO(uint8_t addr, uint8_t value) {
             return;
 
         // LCD Control, Status, Position, Scrolling, and Palettes
-        case 0x40:
-        case 0x41:
-        case 0x42:
+        case 0x40: ppu.writeControl(value); break;
+        case 0x41: ppu.writeStatus(value); break;
+        case 0x42: 
         case 0x43:
-        case 0x44:
-        case 0x45: break;
+        case 0x44: break;
+        case 0x45: ppu.writeYCompare(value); break;
         case 0x46: ppu.writeDMA(value); break;
         case 0x47:
         case 0x48:

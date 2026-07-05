@@ -26,7 +26,10 @@ class MMU final : public Bus {
         std::array<uint8_t, 160> oam;
         std::array<uint8_t, 127> hram;
 
-        MMU(Cartridge* cart, PPU& ppu, InterruptSystem& interrupt, Joypad& joypad, Timer& timer);
+        MMU(PPU& ppu, InterruptSystem& interrupt, Joypad& joypad, Timer& timer);
+
+        void reset();
+        void insertCartridge(Cartridge* cart);
 
         uint8_t read(uint16_t addr) override;
         void write(uint16_t addr, uint8_t value) override;

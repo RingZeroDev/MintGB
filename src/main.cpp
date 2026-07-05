@@ -6,13 +6,7 @@
 #include <SDL3/SDL.h> 
 #include <SDL3/SDL_main.h>
 
-#include "cpu/cpu.hpp"
-#include "mmu/mmu.hpp"
-#include "ppu/ppu.hpp"
-#include "cartridge/cartridge.hpp"
-#include "hardware/interrupt.hpp"
-#include "hardware/joypad.hpp"
-#include "hardware/timer.hpp"
+#include "gameboy.hpp"
 #include "disassembler/disassembler.hpp"
 
 #include <memory>
@@ -25,12 +19,7 @@ struct AppState {
     SDL_Texture* tilemapTexture;
     SDL_Texture* spritesTexture;
     Cartridge cart { "C:\\Users\\tpmac\\MintGB\\MintGB\\roms\\tetris.gb" };
-    InterruptSystem interrupt;
-    Joypad joypad{};
-    Timer timer{};
-    MMU mmu { cart, ppu, interrupt, joypad, timer };
-    PPU ppu { mmu, interrupt };
-    CPU cpu { mmu, interrupt };
+    Gameboy gb;
 };
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
@@ -99,7 +88,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
         spritesTexture
     };
 
-    state->interrupt.writeIE(static_cast<uint8_t>(InterruptSource::VBlank));
+    state->gb.insertCartridge(&(state->cart));
 
     *appstate = static_cast<void*>(state);
 
@@ -126,6 +115,9 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         return SDL_APP_CONTINUE;
     }
 
+    const std::array<uint8_t, 0x2000>& vram = state->gb.getVRAM(); 
+    const std::array<uint8_t, 160>& oam = state->gb.getOAM();
+
     const SDL_PixelFormatDetails* format = SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_RGBA32);
     static std::array<uint32_t, 128 * 128> tilesData{};
     const std::array<SDL_Color, 4> TILES_PALLETE = {{ 
@@ -136,8 +128,8 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     }};  
     for (int tile = 0; tile < 256; tile++) {
         for (int row = 0; row < 8; row++) {
-            uint8_t lowByte = state->mmu.vram[tile * 16 + row * 2];
-            uint8_t highByte = state->mmu.vram[tile * 16 + row * 2 + 1];
+            uint8_t lowByte = vram[tile * 16 + row * 2];
+            uint8_t highByte = vram[tile * 16 + row * 2 + 1];
 
             for (int pixel = 0; pixel < 8; pixel++) {
                 uint8_t bit = 7 - pixel;
@@ -158,7 +150,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 
     SDL_SetRenderTarget(state->renderer, state->tilemapTexture);
     for (int i = 0; i < 1024; i++) {
-        uint8_t index = state->mmu.vram[0x1800 + i];
+        uint8_t index = vram[0x1800 + i];
         uint8_t tileStartX = index % 16 * 8; 
         uint8_t tileStartY = index / 16 * 8;
 
@@ -190,10 +182,10 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     SDL_SetRenderDrawColor(state->renderer, 0, 0, 0, 255);
     SDL_RenderClear(state->renderer);
     for (int i = 0; i < 40; i++) {
-        uint8_t ypos = state->mmu.oam[i * 4];
-        uint8_t xpos = state->mmu.oam[i * 4 + 1];
-        uint8_t tile = state->mmu.oam[i * 4 + 2];
-        uint8_t attr = state->mmu.oam[i * 4 + 3];
+        uint8_t ypos = oam[i * 4];
+        uint8_t xpos = oam[i * 4 + 1];
+        uint8_t tile = oam[i * 4 + 2];
+        uint8_t attr = oam[i * 4 + 3];
 
         uint8_t tileStartX = tile % 16 * 8; 
         uint8_t tileStartY = tile / 16 * 8;
@@ -227,7 +219,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 
     ImGui::ShowDemoWindow();
 
-    CPUState cpuState = state->cpu.state();
+    CPUState cpuState = state->gb.getCPUState();
     {
         ImGui::Begin("CPU Monitor");                         
 
@@ -276,9 +268,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         ImGui::Begin("Control Panel");
 
         if (ImGui::ArrowButton("step", ImGuiDir_Right)) {
-            for (int i = 0; i < stepAmount; i++) {
-                state->cpu.step();
-            }
+            state->gb.stepInstructions(stepAmount);
         }
 
         if (ImGui::Button("Run")) {
@@ -286,9 +276,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         }
 
         if (running) {
-            for (int i = 0; i < 10000; i++) {
-                state->cpu.step();
-            }
+            state->gb.stepFrame();
         }
 
 
@@ -300,40 +288,45 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     {
         ImGui::Begin("Disassembly");                         
 
-        Disassembler dasm(state->mmu);
-        dasm.setCurrentAddr(cpuState.pc);
+        // Disassembler dasm(state->mmu);
+        // dasm.setCurrentAddr(cpuState.pc);
 
-        std::vector<std::string> ins = dasm.disassemble(20);
-        for (int i = 0; i < ins.size(); i++) {
-            if (i == 0) {
-                ImGui::TextColored(ImVec4(0.0, 1.0, 0.0, 1.0), ins[i].c_str());
-            } else {
-                ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), ins[i].c_str());
-            }
-        }
+        // std::vector<std::string> ins = dasm.disassemble(20);
+        // for (int i = 0; i < ins.size(); i++) {
+        //     if (i == 0) {
+        //         ImGui::TextColored(ImVec4(0.0, 1.0, 0.0, 1.0), ins[i].c_str());
+        //     } else {
+        //         ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), ins[i].c_str());
+        //     }
+        // }
 
         ImGui::End();
     }
 
     static MemoryEditor memEdit;
+    std::array<uint8_t, 0x2000>& mutVram = state->gb.getVRAM(); 
+    std::array<uint8_t, 0x2000>& mutWram = state->gb.getWRAM();
+    std::array<uint8_t, 160>& mutOam = state->gb.getOAM();
+    std::array<uint8_t, 127>& mutHram = state->gb.getHRAM();
+
     {
         ImGui::Begin("Memory");
 
         if (ImGui::BeginTabBar("Memory", ImGuiTabBarFlags_Reorderable)) {
             if (ImGui::BeginTabItem("VRAM")) {
-                memEdit.DrawContents(state->mmu.vram.data(), 0x2000, 0x8000);
+                memEdit.DrawContents(mutVram.data(), 0x2000, 0x8000);
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("WRAM")) {
-                memEdit.DrawContents(state->mmu.wram.data(), 0x2000, 0xC000);
+                memEdit.DrawContents(mutWram.data(), 0x2000, 0xC000);
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("OAM")) {
-                memEdit.DrawContents(state->mmu.oam.data(), 160, 0xFE00);
+                memEdit.DrawContents(mutOam.data(), 160, 0xFE00);
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("HRAM")) {
-                memEdit.DrawContents(state->mmu.hram.data(), 127, 0xFF80);
+                memEdit.DrawContents(mutHram.data(), 127, 0xFF80);
                 ImGui::EndTabItem();
             }
         }
@@ -342,16 +335,13 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         ImGui::End();
     }
 
+    std::pair<uint8_t, uint8_t> interruptState = state->gb.getInterruptState();
     {
         ImGui::Begin("Interrupts");
         ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("IME: {}", cpuState.ime).c_str());
         ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("IME Pending: {}", cpuState.imePending).c_str());
-        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("IE: {:02X}", state->interrupt.readIE()).c_str());
-        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("IF: {:02X}", state->interrupt.readIF()).c_str());
-
-        if (ImGui::Button("Raise VBlank")) {
-            state->interrupt.issueInterrupt(InterruptSource::VBlank);
-        }
+        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("IE: {:02X}", interruptState.first).c_str());
+        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("IF: {:02X}", interruptState.second).c_str());
 
         ImGui::End();
     }
@@ -359,8 +349,8 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     {
         ImGui::Begin("PPU");
 
-        ImGui::Text("LY: %02X", state->ppu.readLY());\
-        ImGui::Text("OAM DMA: %02X", state->ppu.readDMA());
+        // ImGui::Text("LY: %02X", state->ppu.readLY());\
+        // ImGui::Text("OAM DMA: %02X", state->ppu.readDMA());
 
         ImGui::End();
     }
@@ -425,23 +415,25 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         ImGui::End();
     }
 
+    JoypadInput input = state->gb.getInput();
     {
         ImGui::Begin("Input");
 
-        ImGui::Text("JOYP: %02X", state->joypad.readJOYP());
+        ImGui::Text("JOYP: %02X", state->gb.getJoypad());
 
-        ImGui::Checkbox("Up", &state->joypad.up);
-        ImGui::Checkbox("Down", &state->joypad.down); 
-        ImGui::Checkbox("Left", &state->joypad.left);
-        ImGui::Checkbox("Right", &state->joypad.right);
+        ImGui::Checkbox("Up", &input.up);
+        ImGui::Checkbox("Down", &input.down); 
+        ImGui::Checkbox("Left", &input.left);
+        ImGui::Checkbox("Right", &input.right);
 
-        ImGui::Checkbox("A", &state->joypad.a);
-        ImGui::Checkbox("B", &state->joypad.b);
-        ImGui::Checkbox("Select", &state->joypad.select);
-        ImGui::Checkbox("Start", &state->joypad.start);
+        ImGui::Checkbox("A", &input.a);
+        ImGui::Checkbox("B", &input.b);
+        ImGui::Checkbox("Select", &input.select);
+        ImGui::Checkbox("Start", &input.start);
 
         ImGui::End();
     }
+    state->gb.setInput(input);
 
     ImGui::Render();
     SDL_SetRenderScale(state->renderer, state->io.DisplayFramebufferScale.x, state->io.DisplayFramebufferScale.y);

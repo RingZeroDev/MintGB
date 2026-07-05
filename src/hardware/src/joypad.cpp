@@ -1,10 +1,14 @@
 #include "joypad.hpp"
 
+void Joypad::reset() {
+    joyp = 0b11111111;
+}
+
 void Joypad::setInput(JoypadInput input) {
     bool action = joyp >> 4 & 1;
     bool direction = joyp >> 5 & 1;
     if (action & direction) {
-        joyp = 0b11110000; // all buttons pressed
+        joyp = 0b11110001; // all buttons pressed
     } else if (action) {
         joyp |= constructInput(input.a, input.b, input.select, input.start);
     } else if (direction) {
@@ -12,6 +16,10 @@ void Joypad::setInput(JoypadInput input) {
     } else {
         joyp = 0b11111111; // no buttons pressed
     }
+}
+
+JoypadInput Joypad::getInput() {
+    return JoypadInput { };
 }
 
 uint8_t Joypad::constructInput(bool inp0, bool inp1, bool inp2, bool inp3) {

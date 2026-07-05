@@ -25,18 +25,30 @@ class PPU {
 
         uint8_t wy = 0x00, wx = 0x00; // Window Y position, X position plus 7
 
-        uint8_t currentDMA = 0;
         uint8_t dma = 0x00; // DMA: OAM DMA source address and start
 
+        bool frameComplete = false;
+        uint8_t currentDMA = 0;
         unsigned int dots = 0;
 
     public:
         PPU(MMU& mmu, InterruptSystem& interrupt);
 
+        void reset();
         void cycle(); 
+        bool isFrameComplete();
 
-        uint8_t readLY() const;
+        uint8_t readControl() const;
+        void writeControl(uint8_t value);
 
-        uint8_t readDMA();
+        uint8_t readY() const;
+
+        uint8_t readYCompare() const;
+        void writeYCompare(uint8_t value);
+
+        uint8_t readStatus() const;
+        void writeStatus(uint8_t value);
+
+        uint8_t startDMA();
         void writeDMA(uint8_t value);
 };

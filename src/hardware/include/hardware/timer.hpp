@@ -4,20 +4,28 @@
 
 #include <cstdint>
 
+struct TimerState {
+    uint16_t div = 0x0000;
+    uint8_t tima = 0x00;
+    uint8_t tma = 0x00;
+    uint8_t tac = 0b11111000;
+};
+
 class Timer {
     private:
         InterruptSystem& interrupt;
 
-        uint16_t div; // DIV: Divider register
-        uint8_t tima; // TIMA: Timer counter
-        uint8_t tma; // TMA: Timer modulo
-        uint8_t tac; // TAC: Timer control
+        uint16_t div = 0x0000; // DIV: Divider register
+        uint8_t tima = 0x00; // TIMA: Timer counter
+        uint8_t tma = 0x00; // TMA: Timer modulo
+        uint8_t tac = 0b11111000; // TAC: Timer control
 
-        uint16_t frequency;
+        uint16_t frequency = 0;
 
     public:
         Timer(InterruptSystem& interrupt);
 
+        void reset();
         void cycle();
 
         uint8_t readDivider();
@@ -31,4 +39,7 @@ class Timer {
 
         uint8_t readControl();
         void writeControl(uint8_t value);
+
+        TimerState getState() const;
+        void setState(TimerState state);
 };

@@ -72,7 +72,7 @@ void CPU::step() {
         ime = true;
     }
 
-    uint8_t inte = interrupt.readIE() & interrupt.readIF();
+    uint8_t inte = interrupt.readEnable() & interrupt.readFlag();
     if (ime && (inte & 0b00011111)) {
         serviceInterrupt(inte);
         return;
@@ -93,7 +93,7 @@ constexpr std::array<uint8_t, 5> interruptVectors = {{ 0x40, 0x48, 0x50, 0x58, 0
 void CPU::serviceInterrupt(uint8_t inte) {
     int bit = std::countr_zero(inte);
 
-    interrupt.writeIF(interrupt.readIF() & ~(1 << bit));
+    interrupt.writeFlag(interrupt.readFlag() & ~(1 << bit));
     ime = false;
 
     cycle(2);
