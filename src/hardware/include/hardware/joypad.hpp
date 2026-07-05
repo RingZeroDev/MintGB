@@ -9,8 +9,12 @@ struct JoypadInput {
 
 class Joypad {
     private:
-        uint8_t joyp = 0b11111111; // P1/JOYP: Joypad
+        bool right; bool left; bool up; bool down;
+        bool a; bool b; bool select; bool start;
 
+        uint8_t joyp = 0b11001111; // P1/JOYP: Joypad
+
+        void update();
         static uint8_t constructInput(bool inp0, bool inp1, bool inp2, bool inp3);
 
     public:

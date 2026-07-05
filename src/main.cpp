@@ -415,7 +415,20 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         ImGui::End();
     }
 
-    JoypadInput input = state->gb.getInput();
+    static JoypadInput input{};
+
+    const bool *keyStates = SDL_GetKeyboardState(nullptr);
+
+    input.a = keyStates[SDL_SCANCODE_Z];
+    input.b = keyStates[SDL_SCANCODE_X];
+    input.select = keyStates[SDL_SCANCODE_TAB];
+    input.start = keyStates[SDL_SCANCODE_RETURN];
+
+    input.right = keyStates[SDL_SCANCODE_D];
+    input.left = keyStates[SDL_SCANCODE_A];
+    input.up = keyStates[SDL_SCANCODE_W];
+    input.down = keyStates[SDL_SCANCODE_S];
+
     {
         ImGui::Begin("Input");
 
