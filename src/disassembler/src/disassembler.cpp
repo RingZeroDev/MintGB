@@ -3,8 +3,6 @@
 #include <format>
 #include <iostream>
 
-Disassembler::Disassembler(Bus& bus) : bus(bus) {}
-
 static constexpr char HEX[] = "0123456789ABCDEF";
 
 template <typename T>
@@ -18,6 +16,10 @@ constexpr std::string getHexStr(T value) {
     }
 
     return str;
+}
+
+void Disassembler::attachBus(Bus* newBus) {
+    bus = newBus;
 }
 
 std::string Disassembler::getOperandStr(Operand operand) {
@@ -67,28 +69,28 @@ std::string Disassembler::getOperandStr(Operand operand) {
         case Operand::Seven: return "7";
         // Extended 8-bit
         case Operand::Imm8:
-            return "$" + getHexStr(bus.read(currentAddr+1));
+            return "$" + getHexStr(bus->read(currentAddr+1));
         case Operand::Rel8: {
-            uint16_t ea = static_cast<int8_t>(bus.read(currentAddr+1)) + currentAddr + 2;
+            uint16_t ea = static_cast<int8_t>(bus->read(currentAddr+1)) + currentAddr + 2;
             return "$" + getHexStr(ea);
         }
         // Extended 16-bit
         case Operand::Imm16:
         case Operand::Addr16: {
-            uint16_t compound = bus.read(currentAddr+1) | bus.read(currentAddr+2) << 8;
+            uint16_t compound = bus->read(currentAddr+1) | bus->read(currentAddr+2) << 8;
             return "$" + getHexStr(compound);
         }
         // Indirect 8-bit
         case Operand::IndirectAddr8:
-            return "($" + getHexStr(bus.read(currentAddr+1)) + ")";
+            return "($" + getHexStr(bus->read(currentAddr+1)) + ")";
         // Indirect 16-bit
         case Operand::IndirectAddr16: {
-            uint16_t compound = bus.read(currentAddr+1) | bus.read(currentAddr+2) << 8;
+            uint16_t compound = bus->read(currentAddr+1) | bus->read(currentAddr+2) << 8;
             return "($" + getHexStr(compound) + ")";
         }
         // Misc
         case Operand::SPRel8:
-            return "SP+" + getHexStr(bus.read(currentAddr+1));
+            return "SP+" + getHexStr(bus->read(currentAddr+1));
         default:
             throw std::runtime_error(std::format("Unsupported operand type reached: {}", static_cast<int>(operand)));
     }
@@ -109,7 +111,7 @@ std::string Disassembler::getInstructionStr(const Instruction& ins) {
 }
 
 std::string Disassembler::disassembleSingle() {
-    uint8_t opcode = bus.read(currentAddr);
+    uint8_t opcode = bus->read(currentAddr);
     
     std::string output;
     if (opcode == 0xCB) {

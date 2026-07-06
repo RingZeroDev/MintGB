@@ -43,6 +43,14 @@ void Gameboy::stepInstructions(unsigned int amount) {
     }
 }
 
+const Bus& Gameboy::getBus() const {
+    return mmu;
+}
+
+Bus& Gameboy::getBus() {
+    return mmu;
+}
+
 CPUState Gameboy::getCPUState() {
     return cpu.getState();
 }

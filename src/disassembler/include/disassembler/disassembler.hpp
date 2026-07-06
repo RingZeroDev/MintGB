@@ -73,7 +73,7 @@ struct Instruction {
 
 class Disassembler {
     private:
-        Bus& bus;
+        Bus* bus;
         uint16_t currentAddr = 0x0000;
 
         static const Instruction& getUnprefixedInstruction(uint8_t opcode);
@@ -85,7 +85,7 @@ class Disassembler {
         std::string disassembleSingle();
 
     public:
-        Disassembler(Bus& bus);
+        void attachBus(Bus* newBus);
         void setCurrentAddr(uint16_t addr);
         std::vector<std::string> disassemble();
         std::vector<std::string> disassemble(unsigned int amount);

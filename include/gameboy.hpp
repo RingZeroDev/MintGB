@@ -29,6 +29,9 @@ class Gameboy {
         void stepInstruction();
         void stepInstructions(unsigned int amount);
 
+        const Bus& getBus() const;
+        Bus& getBus();
+
         CPUState getCPUState();
         void setCPUState(CPUState state);
 

@@ -1,6 +1,6 @@
 #include "disassembler.hpp"
 #include "cartridge/cartridge.hpp"
-#include "mmu/mmu.hpp"
+#include "mmu/reader.hpp"
 #include "ppu/ppu.hpp"
 
 #include <cstdlib>
@@ -9,10 +9,11 @@
 
 int main() {
     Cartridge cart("C:\\Users\\tpmac\\MintGB\\MintGB\\roms\\tetris.gb");
-    PPU ppu {};
-    MMU mmu { cart, ppu };
+    CartReader reader { cart };
 
-    Disassembler dasm(mmu); 
+    Disassembler dasm;
+    dasm.attachBus(&reader);
+
     auto ins = dasm.disassemble();
     for (std::string str : ins) {
         std::cout << str << "\n";

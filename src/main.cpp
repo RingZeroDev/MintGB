@@ -20,6 +20,7 @@ struct AppState {
     SDL_Texture* spritesTexture;
     Cartridge cart { "C:\\Users\\tpmac\\MintGB\\MintGB\\roms\\tetris.gb" };
     Gameboy gb;
+    Disassembler dasm;
 };
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
@@ -88,7 +89,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
         spritesTexture
     };
 
-    state->gb.insertCartridge(&(state->cart));
+    state->gb.insertCartridge(&state->cart);
+    state->dasm.attachBus(&state->gb.getBus());
 
     *appstate = static_cast<void*>(state);
 
@@ -288,17 +290,16 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     {
         ImGui::Begin("Disassembly");                         
 
-        // Disassembler dasm(state->mmu);
-        // dasm.setCurrentAddr(cpuState.pc);
+        state->dasm.setCurrentAddr(cpuState.pc);
 
-        // std::vector<std::string> ins = dasm.disassemble(20);
-        // for (int i = 0; i < ins.size(); i++) {
-        //     if (i == 0) {
-        //         ImGui::TextColored(ImVec4(0.0, 1.0, 0.0, 1.0), ins[i].c_str());
-        //     } else {
-        //         ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), ins[i].c_str());
-        //     }
-        // }
+        std::vector<std::string> ins = state->dasm.disassemble(20);
+        for (int i = 0; i < ins.size(); i++) {
+            if (i == 0) {
+                ImGui::TextColored(ImVec4(0.0, 1.0, 0.0, 1.0), ins[i].c_str());
+            } else {
+                ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), ins[i].c_str());
+            }
+        }
 
         ImGui::End();
     }
