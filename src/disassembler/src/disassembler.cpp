@@ -132,6 +132,10 @@ void Disassembler::setCurrentAddr(uint16_t addr) {
 }
 
 std::vector<std::string> Disassembler::disassemble() {
+    if (bus == nullptr) {
+        throw std::runtime_error("Disassembler needs to be attached to a bus");
+    }
+
     std::vector<std::string> output;
     while (currentAddr < 0x1000) {
         output.emplace_back(disassembleSingle());
@@ -140,6 +144,10 @@ std::vector<std::string> Disassembler::disassemble() {
 }
 
 std::vector<std::string> Disassembler::disassemble(unsigned int amount) {
+    if (bus == nullptr) {
+        throw std::runtime_error("Disassembler needs to be attached to a bus");
+    }
+
     std::vector<std::string> output;
     for (int i = 0; i < amount; i++) {
         output.emplace_back(disassembleSingle());

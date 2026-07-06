@@ -8,6 +8,7 @@ target_sources(MintGB
     PRIVATE 
         ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/gameboy.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/debugger.cpp
 )
 
 target_include_directories(MintGB 
