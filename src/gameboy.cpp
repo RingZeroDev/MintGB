@@ -59,6 +59,18 @@ void Gameboy::setCPUState(CPUState state) {
     cpu.setState(state);
 }
 
+PPUState Gameboy::getPPUState() {
+    return ppu.getState();
+}
+
+void Gameboy::setPPUState(PPUState state) {
+    ppu.setState(state);
+}
+
+std::array<uint32_t, 160 * 144>& Gameboy::getFramebuffer() {
+    return ppu.getFramebuffer();
+}
+
 TimerState Gameboy::getTimerState() {
     return timer.getState();
 }

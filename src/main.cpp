@@ -18,6 +18,7 @@ struct AppState {
     SDL_Texture* tilesTexture;
     SDL_Texture* tilemapTexture;
     SDL_Texture* spritesTexture;
+    SDL_Texture* frameBuffer;
     Cartridge cart { "C:\\Users\\tpmac\\MintGB\\MintGB\\roms\\tetris.gb" };
     Gameboy gb;
     Debugger db;
@@ -80,13 +81,22 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
         256
     );
 
+    SDL_Texture* frameBuffer = SDL_CreateTexture(
+        renderer,
+        SDL_PIXELFORMAT_RGBA32,
+        SDL_TEXTUREACCESS_STREAMING,
+        160,
+        144
+    );
+
     AppState* state = new AppState {
         window,
         renderer,
         io,
         tilesTexture,
         tilemapTexture,
-        spritesTexture
+        spritesTexture,
+        frameBuffer
     };
 
     state->gb.insertCartridge(&state->cart);
@@ -215,6 +225,8 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     }
     SDL_SetRenderTarget(state->renderer, nullptr);
 
+    SDL_UpdateTexture(state->frameBuffer, nullptr, static_cast<void*>(state->gb.getFramebuffer().data()), 160 * sizeof(uint32_t));
+
     ImGui_ImplSDLRenderer3_NewFrame();
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
@@ -258,11 +270,35 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         ImGui::End();
     }
 
+    PPUState ppuState = state->gb.getPPUState();
     {
         ImGui::Begin("PPU");
 
-        // ImGui::Text("LY: %02X", state->ppu.readLY());\
-        // ImGui::Text("OAM DMA: %02X", state->ppu.readDMA());
+        ImGui::Text("LCDC: %02X", ppuState.lcdc);
+        ImGui::Text("STAT: %02X", ppuState.stat);
+        ImGui::Text("LY: %02X", ppuState.ly);
+        ImGui::Text("LYC: %02X", ppuState.lyc);
+        ImGui::Text("OAM DMA: %02X", ppuState.dma);
+
+        ImGui::End();
+    }
+
+    {
+        ImGui::Begin("Render Output");
+
+        constexpr float tilesAspect = 1;
+        ImVec2 size = ImGui::GetContentRegionAvail();
+        
+        if (size.x / size.y > tilesAspect) {
+            size.x = size.y * tilesAspect;
+        } else {
+            size.y = size.x / tilesAspect;
+        }
+
+        ImGui::Image(
+            (ImTextureID)(intptr_t)(state->frameBuffer),
+            size
+        );
 
         ImGui::End();
     }
@@ -380,6 +416,10 @@ void SDL_AppQuit(void* appstate, SDL_AppResult result) {
     ImGui::DestroyContext();
 
     SDL_DestroyTexture(state->tilesTexture);
+    SDL_DestroyTexture(state->spritesTexture);
+    SDL_DestroyTexture(state->tilemapTexture);
+    SDL_DestroyTexture(state->frameBuffer);
+
     SDL_DestroyRenderer(state->renderer);
     SDL_DestroyWindow(state->window);
     

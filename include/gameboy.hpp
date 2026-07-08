@@ -35,6 +35,11 @@ class Gameboy {
         CPUState getCPUState();
         void setCPUState(CPUState state);
 
+        PPUState getPPUState();
+        void setPPUState(PPUState state);
+
+        std::array<uint32_t, 160 * 144>& getFramebuffer();
+
         TimerState getTimerState();
         void setTimerState(TimerState state);
 

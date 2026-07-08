@@ -28,14 +28,44 @@ void PPU::reset() {
 void PPU::cycle() {
     dots += 4;
 
-    if (dots >= DOTS_PER_LINE) {
-        dots -= DOTS_PER_LINE;
-        ly++;
-        if (ly >= 154) ly -= 154;
-        if (ly == 144) { 
-            interrupt.issueInterrupt(InterruptSource::VBlank);
-            frameComplete = true;
-        } 
+    dots = dots % 70224;
+    ly = dots / 456;
+
+    switch (stat & 0b11) {
+        case 0: {
+            if (dots % 456 < 252) {
+                if (ly >= 144) {
+                    stat &= 0b11111100;
+                    stat |= 1;
+                    interrupt.issueInterrupt(InterruptSource::VBlank);
+                    frameComplete = true;
+                } else {
+                    stat &= 0b11111100;
+                    stat |= 2;
+                    oamScan();
+                }
+            } 
+        } break;
+        case 1: {
+            if (ly < 144) {
+                stat &= 0b11111100;
+                stat |= 2;
+                oamScan();
+            }
+        } break;
+        case 2: {
+            if (dots % 456 > 80) {
+                stat &= 0b11111100;
+                stat |= 3;
+                renderLine();
+            }
+        } break;
+        case 3: {
+            if (dots % 456 > 369) {
+                stat &= 0b11111100;
+                stat |= 0;
+            }
+        } break;
     }
 
     if (currentDMA < 160) {
@@ -48,6 +78,10 @@ bool PPU::isFrameComplete() {
     bool complete = frameComplete;
     frameComplete = false;
     return complete;
+}
+
+std::array<uint32_t, 160 * 144>& PPU::getFramebuffer() {
+    return frameBuffer;
 }
 
 uint8_t PPU::readControl() const {
@@ -85,4 +119,32 @@ uint8_t PPU::startDMA() {
 void PPU::writeDMA(uint8_t value) {
     dma = value;
     currentDMA = 0;
+}
+
+PPUState PPU::getState() const {
+    return PPUState {
+        .lcdc = lcdc,
+        .ly = ly,
+        .stat = stat,
+        .scy = scy, .scx = scx,
+        .bgp = bgp,
+        .obp0 = obp0, 
+        .obp1 = obp1, 
+        .wy = wy, .wx = wx, 
+        .dma = dma 
+    };
+}
+
+void PPU::setState(PPUState state) {
+    lcdc = state.lcdc;
+    ly = state.ly;
+    stat = state.stat;
+    scy = state.scy;
+    scx = state.scx;
+    bgp = state.bgp;
+    obp0 = state.obp0;
+    obp1 = state.obp1;
+    wy = state.wy;
+    wx = state.wx;
+    dma = state.dma;
 }

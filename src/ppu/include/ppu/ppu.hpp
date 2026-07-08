@@ -4,8 +4,26 @@
 #include "hardware/interrupt.hpp"
 
 #include <cstdint>
+#include <array>
 
 class MMU;
+
+struct PPUState {
+    uint8_t lcdc = 0x00;
+
+    uint8_t ly = 0x00;
+    uint8_t lyc = 0x00;
+    uint8_t stat = 0x00; 
+
+    uint8_t scy = 0x00, scx = 0x00;
+
+    uint8_t bgp = 0x00;
+    uint8_t obp0 = 0x00, obp1 = 0x00;
+
+    uint8_t wy = 0x00, wx = 0x00;
+
+    uint8_t dma = 0x00;
+};
 
 class PPU {
     private:
@@ -31,12 +49,20 @@ class PPU {
         uint8_t currentDMA = 0;
         unsigned int dots = 0;
 
+        std::array<uint32_t, 160 * 144> frameBuffer;
+        std::array<uint8_t, 10> spriteIndices;
+
+        void oamScan();
+        void renderLine();
+
     public:
         PPU(MMU& mmu, InterruptSystem& interrupt);
 
         void reset();
         void cycle(); 
+
         bool isFrameComplete();
+        std::array<uint32_t, 160 * 144>& getFramebuffer();
 
         uint8_t readControl() const;
         void writeControl(uint8_t value);
@@ -51,4 +77,7 @@ class PPU {
 
         uint8_t startDMA();
         void writeDMA(uint8_t value);
+
+        PPUState getState() const;
+        void setState(PPUState state);
 };
