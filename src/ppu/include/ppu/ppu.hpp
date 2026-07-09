@@ -65,8 +65,7 @@ class PPU {
         std::array<Sprite, 10> sprites;
 
         void oamScan();
-        void pushBackgroundTile(FIFO& backgroundPixels, FIFO& objectPixels, uint8_t index, uint8_t row);
-        void pushSpriteTile(FIFO& objectPixels, uint8_t index, uint8_t row);
+        void pushTile(FIFO& fifo, uint8_t index, uint8_t row);
         void renderLine();
 
     public:
