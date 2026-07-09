@@ -1,43 +1,110 @@
 #include "ppu.hpp"
 
+#include <algorithm>
+
+struct Pixel {
+    uint8_t color;
+    uint8_t palette;
+    uint8_t priority;
+};
+
+class FIFO {
+    private:
+        std::array<Pixel, 16> pixels {};
+        uint8_t head = 0;
+        uint8_t tail = 0;
+
+    public:
+        void push(const Pixel& spr) {
+            pixels[tail] = spr;
+            tail = (tail + 1) % 16;
+
+        }
+
+        const Pixel& pop() {
+            const Pixel& pixel = pixels[head];
+            head = (head + 1) % 16;
+            return pixel;
+        }
+};
+
 void PPU::oamScan() {
-    uint8_t spriteCount = 0;
+    spriteCount = 0;
 
     for (int i = 0; i < 40; i++) {
         uint8_t spriteOffset = i * 4;
         
         uint8_t ypos = mmu.oam[spriteOffset + 0];
         uint8_t xpos = mmu.oam[spriteOffset + 1];
+        uint8_t tile = mmu.oam[spriteOffset + 2];
+        uint8_t attr = mmu.oam[spriteOffset + 3];
 
         if (ly >= ypos - 16 && ly <= ypos - 8) {
-            spriteCount++;
-
-            spriteIndices[spriteCount - 1] = i;
-
-            if (spriteCount >= 10) return;
+            if (spriteCount < 10) {
+                sprites[spriteCount++] = Sprite {
+                    .tile = tile,
+                    .attr = attr,
+                    .x = xpos,
+                    .y = ypos
+                };
+            } else {
+                break;
+            }
         } 
+    }
+
+    std::stable_sort(sprites.begin(), sprites.begin() + spriteCount, [](const Sprite& a, const Sprite& b) {
+        return a.x < b.x;
+    });
+}
+
+void PPU::pushBackgroundTile(FIFO& backgroundPixels, FIFO& objectPixels, uint8_t index, uint8_t row) {
+    uint8_t low = mmu.vram[index * 16 + row * 2 + 0];
+    uint8_t high = mmu.vram[index * 16 + row * 2 + 1];
+
+    for (int pixel = 0; pixel < 8; pixel++) {
+        uint8_t bit = 7 - pixel;
+        uint8_t lsb = (low >> bit) & 1;
+        uint8_t msb = (high >> bit) & 1;
+        uint8_t color = (msb << 1) | lsb;
+    
+        backgroundPixels.push(Pixel {
+            .color = color,
+            .palette = 0,
+            .priority = 0
+        });
+
+        objectPixels.push(Pixel {
+            .color = 0,
+            .palette = 0,
+            .priority = 0
+        });
     }
 }
 
+std::array<uint32_t, 4> COLORS = {{ 0xFF000000, 0xFF111111, 0xFF222222, 0xFF333333 }};
+
 void PPU::renderLine() {
-    constexpr std::array<uint32_t, 4> COLORS = {{ 0xFFFFFFFF, 0xFFD3D3D3, 0xFFA9A9A9, 0xFF000000 }};
+    FIFO backgroundPixels {};
+    FIFO objectPixels {};
+
+    uint8_t currentSprite = 0;
+    uint8_t nextX = sprites[currentSprite].x;
 
     uint8_t row = ly % 8;
     for (int i = 0; i < 20; i++) {
         uint8_t tile = mmu.vram[0x1800 + (ly / 8) * 32 + i];
+        pushBackgroundTile(backgroundPixels, objectPixels, tile, row);
 
-        uint8_t backgroundLow = mmu.vram[tile * 16 + row * 2 + 0];
-        uint8_t backgroundHigh = mmu.vram[tile * 16 + row * 2 + 1];
+        for (int pixel = 0; pixel < 8; pixel++) {
+            const Pixel& backgroundPixel = backgroundPixels.pop();
+            const Pixel& objectPixel = objectPixels.pop();
 
-         for (int pixel = 0; pixel < 8; pixel++) {
-            uint8_t bit = 7 - pixel;
-            uint8_t lsb = (backgroundLow >> bit) & 1;
-            uint8_t msb = (backgroundHigh >> bit) & 1;
-            uint8_t index = (msb << 1) | lsb;
-
-            uint8_t pixelX = i * 8 + pixel;
-            
-            frameBuffer[ly * 160 + pixelX] = COLORS[index];
+            if (objectPixel.color == 0) {
+                frameBuffer[ly * 160 + i * 8 + pixel] = COLORS[backgroundPixel.color];
+            } else {
+                frameBuffer[ly * 160 + i * 8 + pixel] = COLORS[objectPixel.color];
+            }
         }
     }
 }

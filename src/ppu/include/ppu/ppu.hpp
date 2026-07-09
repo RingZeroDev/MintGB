@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <array>
+#include <optional>
 
 class MMU;
 
@@ -24,6 +25,15 @@ struct PPUState {
 
     uint8_t dma = 0x00;
 };
+
+struct Sprite {
+    uint8_t tile;
+    uint8_t attr;
+    uint8_t x;
+    uint8_t y;
+};
+
+class FIFO;
 
 class PPU {
     private:
@@ -50,9 +60,13 @@ class PPU {
         unsigned int dots = 0;
 
         std::array<uint32_t, 160 * 144> frameBuffer;
-        std::array<uint8_t, 10> spriteIndices;
+
+        uint8_t spriteCount = 0;
+        std::array<Sprite, 10> sprites;
 
         void oamScan();
+        void pushBackgroundTile(FIFO& backgroundPixels, FIFO& objectPixels, uint8_t index, uint8_t row);
+        void pushSpriteTile(FIFO& objectPixels, uint8_t index, uint8_t row);
         void renderLine();
 
     public:

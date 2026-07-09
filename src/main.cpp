@@ -241,6 +241,10 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     {
         ImGui::Begin("Control Panel");
 
+        if (ImGui::ArrowButton("stepFrame", ImGuiDir_Up)) {
+            state->gb.stepFrame();
+        }
+
         if (ImGui::ArrowButton("step", ImGuiDir_Right)) {
             state->gb.stepInstructions(stepAmount);
         }
