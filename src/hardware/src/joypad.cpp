@@ -18,7 +18,7 @@ void Joypad::update() {
     }
 }
 
-void Joypad::setInput(JoypadInput input) {
+void Joypad::setInput(const JoypadInput& input) {
     right = input.right;
     left = input.left;
     up = input.up;

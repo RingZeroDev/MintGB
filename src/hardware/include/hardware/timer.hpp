@@ -41,5 +41,5 @@ class Timer {
         void writeControl(uint8_t value);
 
         TimerState getState() const;
-        void setState(TimerState state);
+        void setState(const TimerState& state);
 };

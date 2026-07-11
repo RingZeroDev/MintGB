@@ -15,12 +15,10 @@ struct AppState {
     SDL_Window* window;
     SDL_Renderer* renderer;
     ImGuiIO& io;
-    SDL_Texture* tilemapTexture;
-    SDL_Texture* spritesTexture;
     SDL_Texture* frameBuffer;
     Cartridge cart { "C:\\Users\\tpmac\\MintGB\\MintGB\\roms\\tetris.gb" };
     Gameboy gb;
-    Debugger db;
+    Debugger db { *renderer };
 };
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
@@ -56,22 +54,6 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
     ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
     ImGui_ImplSDLRenderer3_Init(renderer);
 
-    SDL_Texture* tilemapTexture = SDL_CreateTexture(
-        renderer,
-        SDL_PIXELFORMAT_RGBA32,
-        SDL_TEXTUREACCESS_TARGET,
-        256,
-        256
-    );
-
-    SDL_Texture* spritesTexture = SDL_CreateTexture(
-        renderer,
-        SDL_PIXELFORMAT_RGBA32,
-        SDL_TEXTUREACCESS_TARGET,
-        256,
-        256
-    );
-
     SDL_Texture* frameBuffer = SDL_CreateTexture(
         renderer,
         SDL_PIXELFORMAT_RGBA32,
@@ -84,8 +66,6 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
         window,
         renderer,
         io,
-        tilemapTexture,
-        spritesTexture,
         frameBuffer
     };
 
@@ -227,9 +207,6 @@ void SDL_AppQuit(void* appstate, SDL_AppResult result) {
     ImGui_ImplSDL3_Shutdown();
     ImGui::DestroyContext();
 
-    SDL_DestroyTexture(state->tilesTexture);
-    SDL_DestroyTexture(state->spritesTexture);
-    SDL_DestroyTexture(state->tilemapTexture);
     SDL_DestroyTexture(state->frameBuffer);
 
     SDL_DestroyRenderer(state->renderer);

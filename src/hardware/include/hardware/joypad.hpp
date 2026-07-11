@@ -20,7 +20,7 @@ class Joypad {
     public:
         void reset();
 
-        void setInput(JoypadInput input);
+        void setInput(const JoypadInput& input);
         JoypadInput getInput();
 
         uint8_t read();

@@ -70,7 +70,7 @@ TimerState Timer::getState() const {
     };
 }
 
-void Timer::setState(TimerState state) {
+void Timer::setState(const TimerState& state) {
     div = state.div;
     tima = state.tima;
     tma = state.tma;
