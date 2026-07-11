@@ -103,8 +103,6 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::ShowDemoWindow();
-
     CPUState cpuState = state->gb.getCPUState();
     state->db.render();
 

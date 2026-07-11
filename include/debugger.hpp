@@ -26,6 +26,8 @@ class Debugger {
         SDL_Texture* spritesTexture;
         SDL_Texture* tilemapTexture;
 
+        uint32_t hexValue = 0x00000000;
+
         void updateTiles();
         void updateSprites();
         void updateTilemap();
@@ -38,6 +40,7 @@ class Debugger {
         void renderTiles();
         void renderSprites();
         void renderTilemap();
+        void renderConverter();
 
     public:
         Debugger(SDL_Renderer& renderer);

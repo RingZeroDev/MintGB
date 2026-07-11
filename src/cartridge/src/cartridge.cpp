@@ -2,6 +2,40 @@
 
 #include <format>
 
+std::string_view Cartridge::getCartridgeType(uint8_t code) {
+    switch (code) {
+        case 0x00: return "ROM ONLY";
+        case 0x01: return "MBC1";
+        case 0x02: return "MBC1+RAM";
+        case 0x03: return "MBC1+RAM+BATTERY";
+        case 0x05: return "MBC2";
+        case 0x06: return "MBC2+BATTERY";
+        case 0x08: return "ROM+RAM";
+        case 0x09: return "ROM+RAM+BATTERY";
+        case 0x0B: return "MMM01";
+        case 0x0C: return "MMM01+RAM";
+        case 0x0F: return "MMM01+RAM+BATTERY";
+        case 0x10: return "MBC3+TIMER+BATTERY";
+        case 0x11: return "MBC3";
+        case 0x12: return "MBC3+RAM";
+        case 0x13: return "MBC3+RAM+BATTERY";
+        case 0x19: return "MBC5";
+        case 0x1A: return "MBC5+RAM";
+        case 0x1B: return "MBC5+RAM+BATTERY";
+        case 0x1C: return "MBC5+RUMBLE";
+        case 0x1D: return "MBC5+RUMBLE+RAM";
+        case 0x1E: return "MBC5+RUMBLE+RAM+BATTERY";
+        case 0x20: return "MBC6";
+        case 0x22: return "MBC7+SENSOR+RUMBLE+RAM+BATTERY";
+        case 0xFC: return "POCKET CAMERA";
+        case 0xFD: return "BANDAI TAMA5";
+        case 0xFE: return "HuC3";
+        case 0xFF: return "HuC1+RAM+BATTERY";
+
+        default: return "Unrecognized";
+    }
+}
+
 Cartridge::Cartridge(const char* path) {
     size_t fileSize = std::filesystem::file_size(path);
     
@@ -14,6 +48,8 @@ Cartridge::Cartridge(const char* path) {
 
     title = std::string_view(reinterpret_cast<const char*>(&buffer[0x0134]), 0x0143 - 0x0134);
     licensee = getOldLicensee(buffer[0x014B]);
+
+    type = getCartridgeType(buffer[0x0147]);
 
     uint8_t romCode = buffer[0x0148];
     romSize = 32768 * (1 << romCode);
@@ -28,4 +64,41 @@ Cartridge::Cartridge(const char* path) {
 uint8_t Cartridge::read(uint16_t addr) {
     return buffer[addr];
 } 
+
+CartridgeMetadata Cartridge::getMetadata() const {
+    return CartridgeMetadata {
+        .title = title,
+        .manufacturerCode = manufacturerCode,
+        .licensee = licensee,
+        .type = type,
+        .romSize = romSize,
+        .ramSize = ramSize,
+        .versionNumber = versionNumber,
+        .headerChecksum = headerChecksum,
+        .globalChecksum = globalChecksum
+    };
+}
+
+uint8_t Cartridge::calculateHeaderChecksum() const {
+    uint8_t checksum = 0x00;
+
+    for (uint16_t addr = 0x0134; addr <= 0x014C; addr++) {
+        checksum = checksum - buffer[addr] - 1;
+    }
+
+    return checksum;
+}
+
+uint16_t Cartridge::calculateGlobalChecksum() const {
+    uint16_t checksum = 0x0000;
+
+    for (size_t addr = 0x0000; addr < buffer.size(); addr++) {
+        // Skip the two global checksum bytes
+        if (addr == 0x014E || addr == 0x014F) continue;
+
+        checksum += buffer[addr];
+    }
+
+    return checksum;
+}
 

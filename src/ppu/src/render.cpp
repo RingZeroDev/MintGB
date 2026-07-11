@@ -13,7 +13,6 @@ void PPU::oamScan() {
         uint8_t tile = mmu.oam[spriteOffset + 2];
         uint8_t attr = mmu.oam[spriteOffset + 3];
 
-        // make sure to check if first = is needed
         if (ly >= static_cast<uint16_t>(ypos - 16) && ly < static_cast<uint16_t>(ypos - 8)) {
             if (spriteCount < 10) {
                 sprites[spriteCount++] = Sprite {

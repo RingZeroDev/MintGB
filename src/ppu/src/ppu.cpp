@@ -1,7 +1,5 @@
 #include "ppu.hpp"
 
-constexpr unsigned int DOTS_PER_LINE = 456;
-
 PPU::PPU(MMU& mmu, InterruptSystem& interrupt) : mmu(mmu), interrupt(interrupt) {}
 
 void PPU::reset() {

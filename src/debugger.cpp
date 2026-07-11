@@ -42,38 +42,38 @@ void Debugger::attachGameboy(Gameboy* newGB) {
 void Debugger::renderCPU() {
     ImGui::Begin("CPU Monitor");                         
 
-    if (ImGui::BeginTable("Registers", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoHostExtendX)) {
+    if (ImGui::BeginTable("Registers", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoHostExtendX)) {
         ImGui::TableNextRow();
 
         ImGui::TableNextColumn();
         ImGui::Text("PC");
         ImGui::TableNextColumn();
-        ImGui::Text("%04X", cpuState.pc);
+        ImGui::InputScalar("##Program Counter", ImGuiDataType_U16, &cpuState.pc, nullptr, nullptr, "%04X", ImGuiInputTextFlags_CharsHexadecimal);
 
         ImGui::TableNextColumn();
         ImGui::Text("SP");
         ImGui::TableNextColumn();
-        ImGui::Text("%04X", cpuState.sp);
+        ImGui::InputScalar("##Stack Pointer", ImGuiDataType_U16, &cpuState.sp, nullptr, nullptr, "%04X", ImGuiInputTextFlags_CharsHexadecimal);
 
         ImGui::TableNextColumn();
         ImGui::Text("AF");
         ImGui::TableNextColumn();
-        ImGui::Text("%04X", cpuState.af);
+        ImGui::InputScalar("##AF Register", ImGuiDataType_U16, &cpuState.af, nullptr, nullptr, "%04X", ImGuiInputTextFlags_CharsHexadecimal);
         
         ImGui::TableNextColumn();
         ImGui::Text("BC");
         ImGui::TableNextColumn();
-        ImGui::Text("%04X", cpuState.bc);
+        ImGui::InputScalar("##BC Register", ImGuiDataType_U16, &cpuState.bc, nullptr, nullptr, "%04X", ImGuiInputTextFlags_CharsHexadecimal);
 
         ImGui::TableNextColumn();
         ImGui::Text("DE");
         ImGui::TableNextColumn();
-        ImGui::Text("%04X", cpuState.de);
+        ImGui::InputScalar("##DE Register", ImGuiDataType_U16, &cpuState.de, nullptr, nullptr, "%04X", ImGuiInputTextFlags_CharsHexadecimal);
 
         ImGui::TableNextColumn();
         ImGui::Text("HL");
         ImGui::TableNextColumn();
-        ImGui::Text("%04X", cpuState.hl);
+        ImGui::InputScalar("##HL Register", ImGuiDataType_U16, &cpuState.hl, nullptr, nullptr, "%04X", ImGuiInputTextFlags_CharsHexadecimal);
 
         ImGui::EndTable();
     }
@@ -134,10 +134,10 @@ void Debugger::renderInterrupts() {
 
     ImGui::Begin("Interrupts");
         
-    ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("IME: {}", cpuState.ime).c_str());
-    ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("IME Pending: {}", cpuState.imePending).c_str());
-    ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("IE: {:02X}", interruptState.first).c_str());
-    ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("IF: {:02X}", interruptState.second).c_str());
+    ImGui::Checkbox("IME", &cpuState.ime);
+    ImGui::Checkbox("IME Pending", &cpuState.imePending);
+    ImGui::InputScalar("IE", ImGuiDataType_U8, &interruptState.first, nullptr, nullptr, "%02X", ImGuiInputTextFlags_CharsHexadecimal);
+    ImGui::InputScalar("IF", ImGuiDataType_U8, &interruptState.second, nullptr, nullptr, "%02X", ImGuiInputTextFlags_CharsHexadecimal);
 
     ImGui::End();
 }
@@ -147,11 +147,11 @@ void Debugger::renderPPU() {
     
     ImGui::Begin("PPU");
 
-    ImGui::Text("LCDC: %02X", ppuState.lcdc);
-    ImGui::Text("STAT: %02X", ppuState.stat);
-    ImGui::Text("LY: %02X", ppuState.ly);
-    ImGui::Text("LYC: %02X", ppuState.lyc);
-    ImGui::Text("OAM DMA: %02X", ppuState.dma);
+    ImGui::InputScalar("LCDC", ImGuiDataType_U8, &ppuState.lcdc, nullptr, nullptr, "%02X", ImGuiInputTextFlags_CharsHexadecimal);
+    ImGui::InputScalar("STAT", ImGuiDataType_U8, &ppuState.stat, nullptr, nullptr, "%02X", ImGuiInputTextFlags_CharsHexadecimal);
+    ImGui::InputScalar("LY", ImGuiDataType_U8, &ppuState.ly, nullptr, nullptr, "%02X", ImGuiInputTextFlags_CharsHexadecimal);
+    ImGui::InputScalar("LYC", ImGuiDataType_U8, &ppuState.lyc, nullptr, nullptr, "%02X", ImGuiInputTextFlags_CharsHexadecimal);
+    ImGui::InputScalar("OAM", ImGuiDataType_U8, &ppuState.dma, nullptr, nullptr, "%02X", ImGuiInputTextFlags_CharsHexadecimal);
 
     ImGui::End();
 }
@@ -323,6 +323,17 @@ void Debugger::renderTilemap() {
     ImGui::End();
 }
 
+void Debugger::renderConverter() {
+    ImGui::Begin("Hex Converter");
+
+    ImGui::InputScalar("##Hex Value", ImGuiDataType_U32, &hexValue, nullptr, nullptr, "%X");
+    ImGui::Text("Decimal: %d", hexValue);
+    ImGui::Text("Octal: %o", hexValue);
+    ImGui::Text("Binary: %b", hexValue);
+
+    ImGui::End();
+}
+
 void Debugger::render() {
     if (gb == nullptr) {
         throw std::runtime_error("Debugger must have a Gameboy attached");
@@ -341,4 +352,5 @@ void Debugger::render() {
     renderTiles();
     renderSprites();
     renderTilemap();
+    renderConverter();
 }
