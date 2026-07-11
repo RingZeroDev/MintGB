@@ -15,7 +15,6 @@ struct AppState {
     SDL_Window* window;
     SDL_Renderer* renderer;
     ImGuiIO& io;
-    SDL_Texture* tilesTexture;
     SDL_Texture* tilemapTexture;
     SDL_Texture* spritesTexture;
     SDL_Texture* frameBuffer;
@@ -57,14 +56,6 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
     ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
     ImGui_ImplSDLRenderer3_Init(renderer);
 
-    SDL_Texture* tilesTexture = SDL_CreateTexture(
-        renderer,
-        SDL_PIXELFORMAT_RGBA32,
-        SDL_TEXTUREACCESS_STREAMING,
-        128,
-        128
-    );
-
     SDL_Texture* tilemapTexture = SDL_CreateTexture(
         renderer,
         SDL_PIXELFORMAT_RGBA32,
@@ -93,7 +84,6 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
         window,
         renderer,
         io,
-        tilesTexture,
         tilemapTexture,
         spritesTexture,
         frameBuffer
@@ -126,104 +116,6 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         SDL_Delay(10);
         return SDL_APP_CONTINUE;
     }
-
-    const std::array<uint8_t, 0x2000>& vram = state->gb.getVRAM(); 
-    const std::array<uint8_t, 160>& oam = state->gb.getOAM();
-
-    const SDL_PixelFormatDetails* format = SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_RGBA32);
-    static std::array<uint32_t, 128 * 128> tilesData{};
-    const std::array<SDL_Color, 4> TILES_PALLETE = {{ 
-        SDL_Color { 255, 255, 255, 255 }, 
-        SDL_Color { 211, 211, 211, 255 }, 
-        SDL_Color { 169, 169, 169, 255 },
-        SDL_Color { 0, 0, 0, 255 } 
-    }};  
-    for (int tile = 0; tile < 256; tile++) {
-        for (int row = 0; row < 8; row++) {
-            uint8_t lowByte = vram[tile * 16 + row * 2];
-            uint8_t highByte = vram[tile * 16 + row * 2 + 1];
-
-            for (int pixel = 0; pixel < 8; pixel++) {
-                uint8_t bit = 7 - pixel;
-                uint8_t lsb = (lowByte >> bit) & 1;
-                uint8_t msb = (highByte >> bit) & 1;
-                uint8_t index = (msb << 1) | lsb;
-
-                uint8_t tileX = tile % 16;
-                uint8_t tileY = tile / 16;
-                uint8_t pixelX = tileX * 8 + pixel;
-                uint8_t pixelY = tileY * 8 + row;
-                SDL_Color color = TILES_PALLETE[index];
-                tilesData[pixelY * 128 + pixelX] = SDL_MapRGBA(format, nullptr, color.r, color.g, color.b, color.a);
-            }
-        }
-    }
-    SDL_UpdateTexture(state->tilesTexture, nullptr, static_cast<void*>(tilesData.data()), 128 * sizeof(uint32_t));
-
-    SDL_SetRenderTarget(state->renderer, state->tilemapTexture);
-    for (int i = 0; i < 1024; i++) {
-        uint8_t index = vram[0x1800 + i];
-        uint8_t tileStartX = index % 16 * 8; 
-        uint8_t tileStartY = index / 16 * 8;
-
-        uint8_t mapStartX = i % 32 * 8;
-        uint8_t mapStartY = i / 32 * 8; 
-
-        SDL_FRect src = SDL_FRect { 
-            static_cast<float>(tileStartX), 
-            static_cast<float>(tileStartY), 
-            8, 
-            8 
-        };
-        SDL_FRect dst = SDL_FRect {
-            static_cast<float>(mapStartX),
-            static_cast<float>(mapStartY),
-            8,
-            8
-        };
-        SDL_RenderTexture(
-            state->renderer, 
-            state->tilesTexture, 
-            &src,
-            &dst
-        );
-    }
-    SDL_SetRenderTarget(state->renderer, nullptr);
-
-    SDL_SetRenderTarget(state->renderer, state->spritesTexture);
-    SDL_SetRenderDrawColor(state->renderer, 0, 0, 0, 255);
-    SDL_RenderClear(state->renderer);
-    for (int i = 0; i < 40; i++) {
-        uint8_t ypos = oam[i * 4];
-        uint8_t xpos = oam[i * 4 + 1];
-        uint8_t tile = oam[i * 4 + 2];
-        uint8_t attr = oam[i * 4 + 3];
-
-        uint8_t tileStartX = tile % 16 * 8; 
-        uint8_t tileStartY = tile / 16 * 8;
-
-        if (ypos > 0) {
-            SDL_FRect src = SDL_FRect { 
-                static_cast<float>(tileStartX), 
-                static_cast<float>(tileStartY), 
-                8, 
-                8 
-            };
-            SDL_FRect dst = SDL_FRect {
-                static_cast<float>(xpos - 8),
-                static_cast<float>(ypos - 16),
-                8,
-                8
-            };
-            SDL_RenderTexture(
-                state->renderer,
-                state->tilesTexture,
-                &src,
-                &dst
-            );
-        }
-    }
-    SDL_SetRenderTarget(state->renderer, nullptr);
 
     SDL_UpdateTexture(state->frameBuffer, nullptr, static_cast<void*>(state->gb.getFramebuffer().data()), 160 * sizeof(uint32_t));
 
@@ -263,30 +155,6 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         ImGui::End();
     }
 
-    std::pair<uint8_t, uint8_t> interruptState = state->gb.getInterruptState();
-    {
-        ImGui::Begin("Interrupts");
-        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("IME: {}", cpuState.ime).c_str());
-        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("IME Pending: {}", cpuState.imePending).c_str());
-        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("IE: {:02X}", interruptState.first).c_str());
-        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), std::format("IF: {:02X}", interruptState.second).c_str());
-
-        ImGui::End();
-    }
-
-    PPUState ppuState = state->gb.getPPUState();
-    {
-        ImGui::Begin("PPU");
-
-        ImGui::Text("LCDC: %02X", ppuState.lcdc);
-        ImGui::Text("STAT: %02X", ppuState.stat);
-        ImGui::Text("LY: %02X", ppuState.ly);
-        ImGui::Text("LYC: %02X", ppuState.lyc);
-        ImGui::Text("OAM DMA: %02X", ppuState.dma);
-
-        ImGui::End();
-    }
-
     {
         ImGui::Begin("Render Output");
 
@@ -301,66 +169,6 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 
         ImGui::Image(
             (ImTextureID)(intptr_t)(state->frameBuffer),
-            size
-        );
-
-        ImGui::End();
-    }
-
-    {
-        ImGui::Begin("Tile Viewer");
-
-        constexpr float tilesAspect = 1;
-        ImVec2 size = ImGui::GetContentRegionAvail();
-        
-        if (size.x / size.y > tilesAspect) {
-            size.x = size.y * tilesAspect;
-        } else {
-            size.y = size.x / tilesAspect;
-        }
-
-        ImGui::Image(
-            (ImTextureID)(intptr_t)(state->tilesTexture),
-            size
-        );
-
-        ImGui::End();
-    }
-
-    {
-        ImGui::Begin("Tilemap Viewer");
-
-        constexpr float tilemapAspect = 1;
-        ImVec2 size = ImGui::GetContentRegionAvail();
-        
-        if (size.x / size.y > tilemapAspect) {
-            size.x = size.y * tilemapAspect;
-        } else {
-            size.y = size.x / tilemapAspect;
-        }
-
-        ImGui::Image(
-            (ImTextureID)(intptr_t)(state->tilemapTexture),
-            size
-        );
-
-        ImGui::End();
-    }
-
-    {
-        ImGui::Begin("Sprite Viewer");
-
-        constexpr float spriteAspect = 1;
-        ImVec2 size = ImGui::GetContentRegionAvail();
-        
-        if (size.x / size.y > spriteAspect) {
-            size.x = size.y * spriteAspect;
-        } else {
-            size.y = size.x / spriteAspect;
-        }
-
-        ImGui::Image(
-            (ImTextureID)(intptr_t)(state->spritesTexture),
             size
         );
 

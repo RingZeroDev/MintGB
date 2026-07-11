@@ -101,7 +101,7 @@ void CPU::serviceInterrupt(uint8_t inte) {
     cycle();
 }
 
-CPUState CPU::getState() {
+CPUState CPU::getState() const {
     return CPUState {
         pc, sp, af, bc, de, hl,
 
@@ -110,10 +110,10 @@ CPUState CPU::getState() {
     };
 }
 
-void CPU::setState(CPUState state) {
+void CPU::setState(const CPUState& state) {
     pc = state.pc;
     sp = state.sp;
-    af = state.af &= 0b1111111111110000;
+    af = state.af & 0b1111111111110000;
     bc = state.bc;
     de = state.de;
     hl = state.hl;

@@ -8,24 +8,41 @@
 #include "imgui_impl_sdlrenderer3.h"
 #include "imgui_memory_editor.h"
 
+#include <SDL3/SDL.h> 
+
 class Debugger {
     private:
         Gameboy* gb;
-
-        CPUState cpuState;
+        SDL_Renderer& renderer;
 
         Disassembler dasm;
         MemoryEditor memEdit;
+        
+        CPUState cpuState;
+
+        std::array<uint32_t, 128 * 128> tilesData{};
+        SDL_Texture* tilesTexture;
+
+        SDL_Texture* spritesTexture;
+        SDL_Texture* tilemapTexture;
+
+        void updateTiles();
+        void updateSprites();
+        void updateTilemap();
 
         void renderCPU();
         void renderDisassembly();
-        void renderMemory(std::array<uint8_t, 0x2000>& vram, 
-                          std::array<uint8_t, 0x2000>& wram, 
-                          std::array<uint8_t, 160>& oam, 
-                          std::array<uint8_t, 127>& hram
-                         );
+        void renderMemory();
+        void renderInterrupts();
+        void renderPPU();
+        void renderTiles();
+        void renderSprites();
+        void renderTilemap();
 
     public:
+        Debugger(SDL_Renderer& renderer);
+        ~Debugger();
+
         void attachGameboy(Gameboy* newGB);
         void render();
 };

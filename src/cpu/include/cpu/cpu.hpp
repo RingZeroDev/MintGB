@@ -230,8 +230,8 @@ class CPU {
         void stop();
 
     public:
-        CPUState getState();
-        void setState(CPUState cpu);
+        CPUState getState() const;
+        void setState(const CPUState& cpu);
 
         void reset();
         void step();

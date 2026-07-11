@@ -135,7 +135,7 @@ PPUState PPU::getState() const {
     };
 }
 
-void PPU::setState(PPUState state) {
+void PPU::setState(const PPUState& state) {
     lcdc = state.lcdc;
     ly = state.ly;
     stat = state.stat;

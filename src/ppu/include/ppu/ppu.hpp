@@ -93,5 +93,5 @@ class PPU {
         void writeDMA(uint8_t value);
 
         PPUState getState() const;
-        void setState(PPUState state);
+        void setState(const PPUState& state);
 };
