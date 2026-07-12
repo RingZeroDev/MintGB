@@ -59,10 +59,14 @@ Cartridge::Cartridge(const char* path) {
     
     headerChecksum = buffer[0x014D];
     globalChecksum = buffer[0x014E] << 8 | buffer[0x014F];
+
+    mbc.emplace<ROMOnly>(std::move(buffer));
 }
 
 uint8_t Cartridge::read(uint16_t addr) {
-    return buffer[addr];
+    return std::visit([addr](auto&& mapper) {
+        return mapper.read(addr);
+    }, mbc);
 } 
 
 CartridgeMetadata Cartridge::getMetadata() const {

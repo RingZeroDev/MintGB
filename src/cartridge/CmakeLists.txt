@@ -8,6 +8,8 @@ target_sources(Cartridge
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/cartridge.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/licensee.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/mapper.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/mbc/mbc1.cpp
 )
 
 target_include_directories(Cartridge

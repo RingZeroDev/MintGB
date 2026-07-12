@@ -1,5 +1,7 @@
 #pragma once
 
+#include "mapper.hpp"
+
 #include <iostream>
 #include <fstream>
 #include <filesystem>
@@ -20,6 +22,8 @@ struct CartridgeMetadata {
 
 class Cartridge {
     private:
+        Mapper mbc;
+
         std::vector<uint8_t> buffer;
 
         std::string_view title;
@@ -35,6 +39,7 @@ class Cartridge {
         static std::string_view getCartridgeType(uint8_t code);
         static std::string_view getOldLicensee(uint8_t code);
         static std::string_view getNewLicensee(uint8_t code);
+        static Mapper chooseMapper(uint8_t code);
 
     public:
         uint8_t read(uint16_t addr);
