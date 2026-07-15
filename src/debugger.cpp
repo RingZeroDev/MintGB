@@ -152,6 +152,7 @@ void Debugger::renderPPU() {
     ImGui::InputScalar("LY", ImGuiDataType_U8, &ppuState.ly, nullptr, nullptr, "%02X", ImGuiInputTextFlags_CharsHexadecimal);
     ImGui::InputScalar("LYC", ImGuiDataType_U8, &ppuState.lyc, nullptr, nullptr, "%02X", ImGuiInputTextFlags_CharsHexadecimal);
     ImGui::InputScalar("OAM", ImGuiDataType_U8, &ppuState.dma, nullptr, nullptr, "%02X", ImGuiInputTextFlags_CharsHexadecimal);
+    ImGui::InputScalar("SCX", ImGuiDataType_U8, &ppuState.scx, nullptr, nullptr, "%02X", ImGuiInputTextFlags_CharsHexadecimal);
 
     ImGui::End();
 }

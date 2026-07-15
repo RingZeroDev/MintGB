@@ -16,7 +16,7 @@ struct AppState {
     SDL_Renderer* renderer;
     ImGuiIO& io;
     SDL_Texture* frameBuffer;
-    Cartridge cart { "C:\\Users\\tpmac\\MintGB\\MintGB\\roms\\tetris.gb" };
+    Cartridge cart { "C:\\Users\\tpmac\\MintGB\\MintGB\\roms\\Super\ Mario\ Land\ \(World\)\ \(Rev\ 1\).gb" };
     Gameboy gb;
     Debugger db { *renderer };
 };

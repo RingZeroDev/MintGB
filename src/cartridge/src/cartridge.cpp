@@ -1,6 +1,7 @@
 #include "cartridge.hpp"
 
 #include <format>
+#include <type_traits>
 
 std::string_view Cartridge::getCartridgeType(uint8_t code) {
     switch (code) {
@@ -60,7 +61,7 @@ Cartridge::Cartridge(const char* path) {
     headerChecksum = buffer[0x014D];
     globalChecksum = buffer[0x014E] << 8 | buffer[0x014F];
 
-    mbc.emplace<ROMOnly>(std::move(buffer));
+    mbc.emplace<MBC1>(std::move(buffer), std::vector<uint8_t>(ramSize));
 }
 
 uint8_t Cartridge::read(uint16_t addr) {
@@ -68,6 +69,16 @@ uint8_t Cartridge::read(uint16_t addr) {
         return mapper.read(addr);
     }, mbc);
 } 
+
+void Cartridge::write(uint16_t addr, uint8_t value) {
+    return std::visit([addr, value](auto&& mapper) {
+        using T = std::decay_t<decltype(mapper)>;
+        
+        if constexpr (!std::is_same_v<T, ROMOnly>) {
+            mapper.write(addr, value);
+        }
+    }, mbc);
+}
 
 CartridgeMetadata Cartridge::getMetadata() const {
     return CartridgeMetadata {

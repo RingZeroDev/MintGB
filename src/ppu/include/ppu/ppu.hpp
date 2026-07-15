@@ -65,7 +65,7 @@ class PPU {
         std::array<Sprite, 10> sprites;
 
         void oamScan();
-        void pushBackgroundTile(uint8_t tile, uint8_t index, uint8_t row);
+        void pushBackgroundTile(uint8_t tile, uint8_t index, uint8_t row, uint8_t start);
         void pushObject(const Sprite& spr, uint8_t row);
         void renderLine();
 
@@ -91,6 +91,9 @@ class PPU {
 
         uint8_t startDMA();
         void writeDMA(uint8_t value);
+
+        uint8_t readScrollX();
+        void writeScrollX(uint8_t value);
 
         PPUState getState() const;
         void setState(const PPUState& state);

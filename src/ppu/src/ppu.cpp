@@ -29,6 +29,8 @@ void PPU::cycle() {
     dots = dots % 70224;
     ly = dots / 456;
 
+    if (ly * 456 == lyc * 456) interrupt.issueInterrupt(InterruptSource::LCD);
+
     switch (stat & 0b11) {
         case 0: {
             if (dots % 456 < 252) {
@@ -117,6 +119,14 @@ uint8_t PPU::startDMA() {
 void PPU::writeDMA(uint8_t value) {
     dma = value;
     currentDMA = 0;
+}
+
+uint8_t PPU::readScrollX() {
+    return scx;
+}
+
+void PPU::writeScrollX(uint8_t value) {
+    scx = value;
 }
 
 PPUState PPU::getState() const {
