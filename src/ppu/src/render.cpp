@@ -13,7 +13,7 @@ void PPU::oamScan() {
         uint8_t tile = mmu.oam[spriteOffset + 2];
         uint8_t attr = mmu.oam[spriteOffset + 3];
 
-        if (ly >= static_cast<uint16_t>(ypos - 16) && ly < static_cast<uint16_t>(ypos - 8)) {
+        if (ly >= static_cast<int16_t>(ypos - 16) && ly < static_cast<int16_t>(ypos - 8)) {
             if (spriteCount < 10) {
                 sprites[spriteCount++] = Sprite {
                     .tile = tile,
@@ -88,6 +88,6 @@ void PPU::renderLine() {
 
     for (int sprite = 0; sprite < spriteCount; sprite++) {
         const Sprite& spr = sprites[sprite];
-        pushObject(spr, row);
+        pushObject(spr, ly - spr.y + 16);
     }
 }
