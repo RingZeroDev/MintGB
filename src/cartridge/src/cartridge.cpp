@@ -56,6 +56,7 @@ Cartridge::Cartridge(const char* path) {
     romSize = 32768 * (1 << romCode);
 
     uint8_t ramCode = buffer[0x0149];
+    ramSize = 32768 * (1 << ramCode);
     versionNumber = buffer[0x014C];
     
     headerChecksum = buffer[0x014D];

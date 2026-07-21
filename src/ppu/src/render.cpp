@@ -69,9 +69,15 @@ void PPU::pushObject(const Sprite& spr, uint8_t row) {
         const uint8_t msb = (high >> bit) & 1;
         const uint8_t color = (msb << 1) | lsb;
     
-        if (color > 0) {
-            const uint8_t eX = spr.x - 8;
-            frameBuffer[ly * 160 + eX + pixel] = COLORS[color];
+        const uint8_t eX = spr.x - 8;
+        const uint8_t x = eX + pixel;
+        if (x >= 160) continue;
+        const uint16_t fbOffset = ly * 160 + x;
+
+        // might be a subtle sprite overlap bug
+        const bool priority = !((spr.attr >> 7) & 1) || frameBuffer[fbOffset] == COLORS[0];
+        if (color > 0 && priority) {
+            frameBuffer[fbOffset] = COLORS[color];
         }
     }
 }
