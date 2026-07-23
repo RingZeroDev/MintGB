@@ -3,10 +3,26 @@
 #include <cstdint>
 #include <array>
 
+struct APUState {
+    uint8_t nr50 = 0x00;
+    uint8_t nr51 = 0x00; 
+    uint8_t nr52 = 0x00;
+        
+    uint8_t nr10 = 0x00; 
+    uint8_t nr30 = 0x00; 
+
+    std::array<uint8_t, 4> nrx1 {}; 
+    std::array<uint8_t, 4> nrx2 {};
+    std::array<uint8_t, 4> nrx3 {}; 
+    std::array<uint8_t, 4> nrx4 {}; 
+
+    std::array<uint8_t, 16> wave {}; // Wave pattern RAM
+};
+
 class APU {
     private:
         static constexpr int sampleCount = 512
-        float samples[sampleCount];
+        std::array<float, sampleCount> samples {};
 
         uint8_t nr50 = 0x00; // NR50: Master volume & VIN panning
         uint8_t nr51 = 0x00; // NR51: Sound panning
@@ -23,6 +39,11 @@ class APU {
         std::array<uint8_t, 16> wave {}; // Wave pattern RAM
         
     public:
+        const std::array<float, sampleCount>& getSamples();
+
+        APUState getState() const;
+        void setState(const APUState& state);
+
         uint8_t readMasterVolume();
         void writeMasterVolume();
 
